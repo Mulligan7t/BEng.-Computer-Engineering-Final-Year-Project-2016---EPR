@@ -106,10 +106,16 @@ def main():
         print(' ')
         cnt += 1
 
-      ser.write(temp) 
-    
+      
+  
+  
     except ValueError:
         print('Not a float')
+        
+    except KeyboardInterrupt:
+        ser.write("0 0 0 0\r")
+        raise SystemExit
+
       
 
   
