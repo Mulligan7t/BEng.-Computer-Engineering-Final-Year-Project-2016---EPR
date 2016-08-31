@@ -5,6 +5,7 @@ from collections import deque
 
 import matplotlib.pyplot as plt 
 import matplotlib.animation as animation
+import socket
 
 
 def drive(coX0, coX1, coY0, coY1):
@@ -22,6 +23,15 @@ def drive(coX0, coX1, coY0, coY1):
  
 # main() function
 def main():
+
+  Address=("127.0.0.1",5000)
+  s = socket.socket()
+  try:
+    s.connect(Address)
+  except Exception, e:
+    print "The server is not running"
+      
+
   # create parser
   parser = argparse.ArgumentParser(description="LDR serial")
   # add expected arguments

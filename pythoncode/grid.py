@@ -1,10 +1,13 @@
 import Tkinter as tk
-
+import socket, time,os, random
 # Set number of rows and columns
 ROWS = 5
 COLS = 5
 global route
 route= []
+s = socket.socket()
+
+
 # A0 A1 A2
 # B0 B1 B2
 # C0 C1 C2
@@ -35,6 +38,12 @@ def setroute (a, b):
     route.append((a,b))
     print route
 
+def WaitForConnection():
+    global s
+    Client, Addr=(s.accept())
+    print('Connection achieved.')
+
+
 # Create the window, a canvas and the mouse click event binding
 
 
@@ -44,3 +53,11 @@ c.pack()
 c.bind("<Button-1>", callback)
 
 root.mainloop()
+
+print "Waiting for Client"
+Address = ('127.0.0.1',5000)
+MaxClient = 1
+s.bind(Address)
+s.listen(MaxClient)
+WaitForConnection()
+
