@@ -7,19 +7,25 @@
 # http://code.google.com/p/pybluez/source/browse/trunk/examples/simple/rfc...
 # http://people.csail.mit.edu/albert/bluez-intro/x290.html#py-rfcomm-serve...
 
-import bluetooth
+from bluetooth import *
 import threading
 
 name = "BluetoothChat"
 uuid = "fa87c0d0-afac-11de-8a39-0800200c9a66"
+uuid = "94f39d29-7d6d-437d-973b-fba39e49d4ee"
 
-server_sock = bluetooth.BluetoothSocket( bluetooth.RFCOMM )
-server_sock.bind(("", bluetooth.PORT_ANY))
+print "uuid: %s" % uuid
+server_sock = BluetoothSocket( RFCOMM )
+server_sock.bind(("", 8))
 server_sock.listen(1)
 port = server_sock.getsockname()[1]
 
-bluetooth.advertise_service( server_sock, name, uuid )
-
+advertise_service( server_sock, "SampleServer",
+                   service_id = uuid,
+                   service_classes = [ uuid, SERIAL_PORT_CLASS ],
+                   profiles = [ SERIAL_PORT_PROFILE ], 
+#                   protocols = [ OBEX_UUID ] 
+                    )
 print "Waiting for connection on RFCOMM channel %d" % port
 
 class echoThread(threading.Thread):
@@ -33,6 +39,7 @@ class echoThread(threading.Thread):
                 data = self.sock.recv(1024)
                 if len(data) == 0: break
                 print self.client_info, ": received [%s]" % data
+                data = data + "cat"
                 self.sock.send(data)
                 print self.client_info, ": sent [%s]" % data
         except IOError:
