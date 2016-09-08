@@ -39,7 +39,7 @@ class echoThread(threading.Thread):
                 data = self.sock.recv(1024)
                 if len(data) == 0: break
                 print self.client_info, ": received [%s]" % data
-                data = data + "cat"
+                data = data + "cata"
                 self.sock.send(data)
                 print self.client_info, ": sent [%s]" % data
         except IOError:
