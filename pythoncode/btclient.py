@@ -12,8 +12,10 @@ import sys
 import threading
 
 uuid = "fa87c0d0-afac-11de-8a39-0800200c9a66"
-addr = None
 
+uuid = "94f39d29-7d6d-437d-973b-fba39e49d4ee"
+addr = None
+print "uuid: %s" % uuid
 if len(sys.argv) < 2:
     print "No device specified. Searching all nearby bluetooth devices for"
     print "the BluetoothChat service"
@@ -47,7 +49,7 @@ class receiverThread(threading.Thread):
         while True:
             data = self.sock.recv(1024)
             if len(data) == 0: break
-            print "received [%s]" % data
+            print "C received [%s]" % data
 
 receiver = receiverThread(sock)
 receiver.setDaemon(True)
@@ -57,6 +59,6 @@ while True:
     data = raw_input()
     if len(data) == 0: break
     sock.send(data)
-    print "sent [%s]" % data
+    print "C sent [%s]" % data
 
 sock.close()
