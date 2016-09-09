@@ -2,7 +2,7 @@
 from __future__ import division
 from sys import argv
 import zbar
-import Image
+from PIL import Image
 from graphics import *
 if len(argv) < 2: exit(1)
 
