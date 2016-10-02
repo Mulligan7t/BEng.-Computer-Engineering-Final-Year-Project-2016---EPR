@@ -37,7 +37,7 @@ def main():
   scanner.parse_config('enable')
 
   # obtain image data
-  pil = Image.open(argv[1]).convert('L')
+  pil = Image.open('image.jpg').convert('L')
   width, height = pil.size
   raw = pil.tostring()
 
