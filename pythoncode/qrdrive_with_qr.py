@@ -16,8 +16,8 @@ import socket
 def drive(coX0, coX1, coY0, coY1):
   LFspeed = 100 
   RFspeed = 100
-  LBspeed = 100
-  RBspeed = 100
+  LBspeed = -100
+  RBspeed = -100
 
   coXdiff = coX0-coX1
   coYdiff = coY0-coY1
@@ -89,7 +89,7 @@ def main():
 
   #win.getMouse() #pause for click in window
 
-  
+
 #  Address=("127.0.0.1",5000)
 #  s = socket.socket()
 #  try:
@@ -161,7 +161,6 @@ def main():
       if frameCnt < routelen:
         ser.write(drive(route[frameCnt][0],route[frameCnt+1][0],
                     route[frameCnt][1],route[frameCnt+1][1])) 
-        print "Phil"
         #ser.write(driveY() 
 
       
