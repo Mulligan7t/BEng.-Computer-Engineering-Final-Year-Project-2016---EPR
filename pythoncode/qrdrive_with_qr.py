@@ -159,6 +159,7 @@ def main():
       if frameCnt < routelen:
         ser.write(drive(route[frameCnt][0],route[frameCnt+1][0],
                     route[frameCnt][1],route[frameCnt+1][1])) 
+        print "Phil"
         #ser.write(driveY() 
 
       
