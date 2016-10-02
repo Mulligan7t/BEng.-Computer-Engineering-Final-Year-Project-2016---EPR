@@ -28,6 +28,36 @@ def drive(coX0, coX1, coY0, coY1):
  
 # main() function
 def main():
+  if len(argv) < 2: exit(1)
+
+  # create a reader
+  scanner = zbar.ImageScanner()
+
+  # configure the reader
+  scanner.parse_config('enable')
+
+  # obtain image data
+  pil = Image.open(argv[1]).convert('L')
+  width, height = pil.size
+  raw = pil.tostring()
+
+  # wrap image data
+  image = zbar.Image(width, height, 'Y800', raw)
+
+  # scan the image for barcodes
+  scanner.scan(image)
+
+  # extract results
+  for symbol in image:
+      # do something useful with results
+      print 'decoded', symbol.type, symbol.location, 'symbol', '"%s"' % symbol.data
+      barloc = symbol.location
+
+
+  print barloc[0][0]
+
+  # clean up
+  del(image)
 
 #  Address=("127.0.0.1",5000)
 #  s = socket.socket()
