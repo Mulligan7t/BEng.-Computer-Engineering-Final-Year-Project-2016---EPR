@@ -40,6 +40,10 @@ class echoThread(threading.Thread):
                 if len(data) == 0: break
                 print self.client_info, ": received [%s]" % data
                 data = data + "cata"
+                data = raw_input()
+                if len(data) == 0: break
+                self.sock.send(data)
+                print "typed and sent [%s]" % data
                 self.sock.send(data)
                 print self.client_info, ": sent [%s]" % data
         except IOError:
