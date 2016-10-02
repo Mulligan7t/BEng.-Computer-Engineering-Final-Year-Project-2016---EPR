@@ -80,6 +80,7 @@ def main():
   strPort = args.port
 
   ser = serial.Serial(strPort, 115200)
+  printx = 0
   cnt = 1
   velX = 0
   posX = 0
@@ -145,10 +146,11 @@ def main():
         #posX = totposX/cnt
         posX += velX*dt
         velY += data[1]/cnt 
-        print('X\'\' %s' % accXcurr)
-        print('X\'  %s' % velX)
-        print('X   %s' % posX)
-        print(' ')
+        if printx:
+          print('X\'\' %s' % accXcurr)
+          print('X\'  %s' % velX)
+          print('X   %s' % posX)
+          print(' ')
         cnt += 1
 
       
