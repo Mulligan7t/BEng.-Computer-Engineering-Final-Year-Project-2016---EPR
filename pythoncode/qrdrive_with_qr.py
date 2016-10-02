@@ -87,7 +87,9 @@ def main():
   line = Line(Point(c,c), Point(c+a,c+b))
   line.draw(win)
 
-  win.getMouse() #pause for click in window
+  #win.getMouse() #pause for click in window
+
+  
 #  Address=("127.0.0.1",5000)
 #  s = socket.socket()
 #  try:
