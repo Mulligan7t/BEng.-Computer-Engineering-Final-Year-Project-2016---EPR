@@ -13,12 +13,13 @@ from collections import deque
 import socket
 
 
-WHEEL_RADIUS=60
-WHEEL_SEPARATION_WIDTH = 150
-WHEEL_SEPARATION_LENGTH = 200
-linearX = 1
-linearY = 2
+WHEEL_RADIUS=30
+WHEEL_SEPARATION_WIDTH = 93
+WHEEL_SEPARATION_LENGTH = 90
+linearX = 2000
+linearY = 00
 angularZ = 0
+speedcalib = 2.55
 
 def drive(coX0, coX1, coY0, coY1):
   LFspeed = -100 
@@ -26,16 +27,17 @@ def drive(coX0, coX1, coY0, coY1):
   LBspeed = -100
   RBspeed = -100
 
-  LFspeed = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ)
-  RFspeed = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ)
-  LBspeed = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ)
-  RBspeed = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ)
+  LFspeed = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+  RFspeed = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+  LBspeed = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+  RBspeed = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
 
   coXdiff = coX0-coX1
   coYdiff = coY0-coY1
   
 
 
+  print str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
   return str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
 
 def camqr():
@@ -103,8 +105,7 @@ def camqr():
 
 # main() function
 def main():
-  camqr()
-
+#  camqr()
 #  Address=("127.0.0.1",5000)
 #  s = socket.socket()
 #  try:
