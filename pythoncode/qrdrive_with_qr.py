@@ -18,7 +18,7 @@ WHEEL_SEPARATION_WIDTH = 150
 WHEEL_SEPARATION_LENGTH = 200
 linearX = 1
 linearY = 2
-angularZ
+angularZ = 0
 
 def drive(coX0, coX1, coY0, coY1):
   LFspeed = -100 
@@ -37,9 +37,8 @@ def drive(coX0, coX1, coY0, coY1):
 
 
   return str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
- 
-# main() function
-def main():
+
+def camqr():
   if len(argv) < 2: exit(1)
 
   # create a reader
@@ -101,6 +100,10 @@ def main():
 
   #win.getMouse() #pause for click in window
 
+
+# main() function
+def main():
+  camqr()
 
 #  Address=("127.0.0.1",5000)
 #  s = socket.socket()
