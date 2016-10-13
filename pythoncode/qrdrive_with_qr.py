@@ -13,11 +13,23 @@ from collections import deque
 import socket
 
 
+WHEEL_RADIUS=60
+WHEEL_SEPARATION_WIDTH = 150
+WHEEL_SEPARATION_LENGTH = 200
+linearX = 1
+linearY = 2
+angularZ
+
 def drive(coX0, coX1, coY0, coY1):
   LFspeed = -100 
   RFspeed = -100
   LBspeed = -100
   RBspeed = -100
+
+  LFspeed = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ)
+  RFspeed = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ)
+  LBspeed = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ)
+  RBspeed = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ)
 
   coXdiff = coX0-coX1
   coYdiff = coY0-coY1
