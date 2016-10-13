@@ -14,10 +14,10 @@ import socket
 
 
 def drive(coX0, coX1, coY0, coY1):
-  LFspeed = -200 
-  RFspeed = 200
-  LBspeed = 200
-  RBspeed = -200
+  LFspeed = -100 
+  RFspeed = -100
+  LBspeed = -100
+  RBspeed = -100
 
   coXdiff = coX0-coX1
   coYdiff = coY0-coY1
