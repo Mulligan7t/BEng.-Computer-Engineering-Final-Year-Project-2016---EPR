@@ -240,6 +240,10 @@ def main():
         print speed_0, speed_1, speed_2, speed_3
         cnt = 0
         TotalCount_0 = 0
+        TotalCount_1 = 0
+        TotalCount_2 = 0
+        TotalCount_3 = 0
+
 
 # start main demo function
 main()
