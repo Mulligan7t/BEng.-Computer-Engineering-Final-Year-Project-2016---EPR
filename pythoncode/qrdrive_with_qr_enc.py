@@ -411,7 +411,7 @@ def main():
         ser.write("0 0 0 0\r")
         raise SystemExit
 
-    sleep(0.1)                        # sleep 100 msec
+#    sleep(0.1)                        # sleep 100 msec
     cnt = cnt +1
                                   # because of threading make sure no thread
                                   # changes value until we get them
