@@ -12,6 +12,7 @@ from collections import deque
 import socket
 import RPi.GPIO as GPIO
 import threading
+import math
 
                           # GPIO Ports
 Enc_0_A = 21              # Encoder input A: input GPIO 21
@@ -93,10 +94,10 @@ def drive(coX0, coX1, coY0, coY1):
 
 def encoderfeedback():
   global LFspeed, RFspeed, LBspeed, RBspeed
-  LFspeed = int(LFspeed + int(0.1*(LFset-speed_0))+1)
-  RFspeed = int(RFspeed + int(0.1*(RFset-speed_1))+1)
-  LBspeed = int(LBspeed + int(0.1*(LBset-speed_2))+1)
-  RBspeed = int(RBspeed + int(0.1*(RBset-speed_3))+1)
+  LFspeed = int(LFspeed + ceil(0.1*(LFset-speed_0)))
+  RFspeed = int(RFspeed + ceil(0.1*(RFset-speed_1)))
+  LBspeed = int(LBspeed + ceil(0.1*(LBset-speed_2)))
+  RBspeed = int(RBspeed + ceil(0.1*(RBset-speed_3)))
 
   if(LFspeed>254):
     LFspeed = 254
