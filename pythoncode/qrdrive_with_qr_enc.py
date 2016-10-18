@@ -58,11 +58,13 @@ linearY = 2000
 angularZ = 0
 speedcalib = 2.55
 
+LFspeed = 100
+RFspeed = 100
+LBspeed = 100
+RBspeed = 100
+
 def drive(coX0, coX1, coY0, coY1):
-  LFspeed = -100 
-  RFspeed = -100
-  LBspeed = -100
-  RBspeed = -100
+  global LFspeed, RFspeed, LBspeed, RBspeed
 
   LFspeed = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
   RFspeed = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
@@ -71,8 +73,11 @@ def drive(coX0, coX1, coY0, coY1):
 
   coXdiff = coX0-coX1
   coYdiff = coY0-coY1
-  
-
+    
+  LFspeed = 255
+  RFspeed = 0
+  LBspeed = 0
+  RBspeed = 0
 
   print str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
   return str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
@@ -272,12 +277,14 @@ def rotary_interrupt_3(A_or_B):
 
 # main() function
 def main():
-#  camqr()
-#  Address=("127.0.0.1",5000)
-#  s = socket.socket()
-#  try:
-#    s.connect(Address)
-#  except Exception, e:
+  
+  #  camqr()
+  #  Address=("127.0.0.1",5000)
+  #  s = socket.socket()
+  #  try:
+  #    s.connect(Address)
+  #  except Exception, e:
+
   print "The server is not running"
   
   global Rotary_counter_0, LockRotary_0, Rotary_counter_1, LockRotary_1,Rotary_counter_2, LockRotary_2, Rotary_counter_3, LockRotary_3
@@ -347,7 +354,6 @@ def main():
 
 
   print('reading from serial port %s...' % strPort)
-
   print('plotting data...')
 
   
