@@ -61,24 +61,37 @@ RFspeed = 100
 LBspeed = 100
 RBspeed = 100
 
-def drive(coX0, coX1, coY0, coY1):
-  global LFspeed, RFspeed, LBspeed, RBspeed
+LFset = 0
+RFset = 0
+LBset = 0
+RBset = 0
 
-  LFspeed = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-  RFspeed = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-  LBspeed = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-  RBspeed = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+def drive(coX0, coX1, coY0, coY1):
+  global LFset, RFset, LBset, RBset
+
+  LFset = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+  RFset = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+  LBset = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+  RBset = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
 
   coXdiff = coX0-coX1
   coYdiff = coY0-coY1
     
-  LFspeed = 0 
-  RFspeed = 255
-  LBspeed = 0
-  RBspeed = 0
+  LFset = 0 
+  RFset = 255
+  LBset = 0
+  RBset = 0
 
-  print str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
+  print "SET:   " + str(LFset) + " " + str(RFset) + " " + str(LBset) + " " + str(RBset) + "\r"
+
+def encoderfeedback():
+  LFspeed = LFset + 1000
+  RFspeed = RFset + 1000
+  LBspeed = LBset + 1000
+  RBspeed = RBset + 1000
+  print "PWM:   " + str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
   return str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
+
 
 def camqr():
   if len(argv) < 2: exit(1)
@@ -365,8 +378,9 @@ def main():
       frameCnt = int(cnt / 10)
 
       if frameCnt < routelen:
-        ser.write(drive(route[frameCnt][0],route[frameCnt+1][0],
-                    route[frameCnt][1],route[frameCnt+1][1])) 
+        #ser.write()
+        drive(route[frameCnt][0],route[frameCnt+1][0], route[frameCnt][1],route[frameCnt+1][1])
+        ser.write(encoderfeedback())
         #ser.write(driveY() 
 
       
