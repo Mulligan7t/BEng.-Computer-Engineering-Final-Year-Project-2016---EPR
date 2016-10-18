@@ -94,6 +94,83 @@ def rotary_interrupt_0(A_or_B):
       LockRotary_0.release()                  # and release lock
    return                                 # THAT'S IT
 
+
+# Rotarty encoder interrupt:
+# this one is called for both inputs from rotary switch (A and B)
+def rotary_interrupt_1(A_or_B):
+   global Rotary_counter_1, Current_1_A, Current_1_B, LockRotary_1
+                                       # read both of the switches
+   Switch_A = GPIO.input(Enc_1_A)
+   Switch_B = GPIO.input(Enc_1_B)
+                                       # now check if state of A or B has changed
+                                       # if not that means that bouncing caused it
+   if Current_1_A == Switch_A and Current_1_B == Switch_B:      # Same interrupt as before (Bouncing)?
+      return                              # ignore interrupt!
+
+   Current_1_A = Switch_A                        # remember new state
+   Current_1_B = Switch_B                        # for next bouncing check
+
+
+   if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
+      LockRotary_1.acquire()                  # get lock 
+      if A_or_B == Enc_B:                     # Turning direction depends on 
+         Rotary_counter_1 += 1                  # which input gave last interrupt
+      else:                              # so depending on direction either
+         Rotary_counter_1 -= 1                  # increase or decrease counter
+      LockRotary_1.release()                  # and release lock
+   return                                 # THAT'S IT
+
+# Rotarty encoder interrupt:
+# this one is called for both inputs from rotary switch (A and B)
+def rotary_interrupt_2(A_or_B):
+   global Rotary_counter_2, Current_2_A, Current_2_B, LockRotary_2
+                                       # read both of the switches
+   Switch_A = GPIO.input(Enc_2_A)
+   Switch_B = GPIO.input(Enc_2_B)
+                                       # now check if state of A or B has changed
+                                       # if not that means that bouncing caused it
+   if Current_2_A == Switch_A and Current_2_B == Switch_B:      # Same interrupt as before (Bouncing)?
+      return                              # ignore interrupt!
+
+   Current_2_A = Switch_A                        # remember new state
+   Current_2_B = Switch_B                        # for next bouncing check
+
+
+   if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
+      LockRotary_2.acquire()                  # get lock 
+      if A_or_B == Enc_B:                     # Turning direction depends on 
+         Rotary_counter_2 += 1                  # which input gave last interrupt
+      else:                              # so depending on direction either
+         Rotary_counter_2 -= 1                  # increase or decrease counter
+      LockRotary_0.release()                  # and release lock
+   return                                 # THAT'S IT
+
+# Rotarty encoder interrupt:
+# this one is called for both inputs from rotary switch (A and B)
+def rotary_interrupt_3(A_or_B):
+   global Rotary_counter_3, Current_3_A, Current_3_B, LockRotary_3
+                                       # read both of the switches
+   Switch_A = GPIO.input(Enc_3_A)
+   Switch_B = GPIO.input(Enc_3_B)
+                                       # now check if state of A or B has changed
+                                       # if not that means that bouncing caused it
+   if Current_3_A == Switch_A and Current_3_B == Switch_B:      # Same interrupt as before (Bouncing)?
+      return                              # ignore interrupt!
+
+   Current_3_A = Switch_A                        # remember new state
+   Current_3_B = Switch_B                        # for next bouncing check
+
+
+   if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
+      LockRotary_3.acquire()                  # get lock 
+      if A_or_B == Enc_B:                     # Turning direction depends on 
+         Rotary_counter_3 += 1                  # which input gave last interrupt
+      else:                              # so depending on direction either
+         Rotary_counter_3 -= 1                  # increase or decrease counter
+      LockRotary_3.release()                  # and release lock
+   return                                 # THAT'S IT
+
+
 # Main loop. Demonstrate reading, direction and speed of turning left/rignt
 def main():
    global Rotary_counter_0, LockRotary_0
