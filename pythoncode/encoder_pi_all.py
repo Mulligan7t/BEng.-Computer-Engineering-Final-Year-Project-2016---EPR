@@ -94,7 +94,6 @@ def rotary_interrupt_0(A_or_B):
       LockRotary_0.release()                  # and release lock
    return                                 # THAT'S IT
 
-
 # Rotarty encoder interrupt:
 # this one is called for both inputs from rotary switch (A and B)
 def rotary_interrupt_1(A_or_B):
@@ -171,15 +170,17 @@ def rotary_interrupt_3(A_or_B):
    return                                 # THAT'S IT
 
 
-# Main loop. Demonstrate reading, direction and speed of turning left/rignt
+# Main loop. Demonstrate reading, direction and speed_0 of turning left/rignt
 def main():
-   global Rotary_counter_0, LockRotary_0
+   global Rotary_counter_0, LockRotary_0, Rotary_counter_1, LockRotary_1,Rotary_counter_2, LockRotary_2, Rotary_counter_3, LockRotary_3
    
 
-   Volume = 0                           # Current Volume   
-   NewCounter = 0                        # for faster reading with locks
-   cnt = 0               
-   speed = 0
+   TotalCount_0 = 0                           # Current TotalCount_0   
+   NewCounter_0 = 0                        # for faster reading with locks           
+   speed_0 = 0
+   cnt = 0 
+
+
    init()                              # Init interrupts, GPIO, ...
             
    while True :                        # start test 
@@ -190,19 +191,19 @@ def main():
                                     # and reset them
                                     
       LockRotary_0.acquire()               # get lock for rotary switch
-      NewCounter = Rotary_counter_0         # get counter value
+      NewCounter_0 = Rotary_counter_0         # get counter value
       Rotary_counter_0 = 0                  # RESET IT TO 0
       LockRotary_0.release()               # and release lock
                
-      if (NewCounter !=0):               # Counter has CHANGED
-         Volume = Volume + NewCounter
+      if (NewCounter_0 !=0):               # Counter has CHANGED
+         TotalCount_0 = TotalCount_0 + NewCounter_0
 
                                  
       if (cnt > 10):
-        speed = (Volume /cnt)
-	print speed
-	cnt = 0
-	Volume = 0
+        speed_0 = (TotalCount_0 /cnt)
+        print speed_0
+        cnt = 0
+        TotalCount_0 = 0
 
 # start main demo function
 main()
