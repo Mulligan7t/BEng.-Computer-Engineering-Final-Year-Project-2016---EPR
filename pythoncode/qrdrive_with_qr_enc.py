@@ -469,10 +469,10 @@ def main():
 
                                
     if (cnt > 10):
-      speed_0 = (TotalCount_0//cnt)
-      speed_1 = (TotalCount_1//cnt)
-      speed_2 = (TotalCount_2//cnt)
-      speed_3 = (TotalCount_3//cnt)
+      speed_0 = (TotalCount_0/cnt)
+      speed_1 = (TotalCount_1/cnt)
+      speed_2 = (TotalCount_2/cnt)
+      speed_3 = (TotalCount_3/cnt)
       print speed_0, speed_1, speed_2, speed_3
       cnt = 0
       TotalCount_0 = 0
