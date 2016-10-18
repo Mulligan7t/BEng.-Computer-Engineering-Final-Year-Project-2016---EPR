@@ -178,6 +178,15 @@ def main():
    TotalCount_0 = 0                           # Current TotalCount_0   
    NewCounter_0 = 0                        # for faster reading with locks           
    speed_0 = 0
+   TotalCount_1 = 0                           # Current TotalCount_1   
+   NewCounter_1 = 0                        # for faster reading with locks           
+   speed_1 = 0
+   TotalCount_2 = 0                           # Current TotalCount_2   
+   NewCounter_2 = 0                        # for faster reading with locks           
+   speed_2 = 0
+   TotalCount_3 = 0                           # Current TotalCount_3   
+   NewCounter_3 = 0                        # for faster reading with locks           
+   speed_3 = 0
    cnt = 0 
 
 
@@ -198,10 +207,37 @@ def main():
       if (NewCounter_0 !=0):               # Counter has CHANGED
          TotalCount_0 = TotalCount_0 + NewCounter_0
 
+      LockRotary_1.acquire()               # get lock for rotary switch
+      NewCounter_1 = Rotary_counter_1         # get counter value
+      Rotary_counter_1 = 0                  # RESET IT TO 0
+      LockRotary_1.release()               # and release lock
+               
+      if (NewCounter_1 !=0):               # Counter has CHANGED
+         TotalCount_1 = TotalCount_1 + NewCounter_1
+
+      LockRotary_2.acquire()               # get lock for rotary switch
+      NewCounter_2 = Rotary_counter_2         # get counter value
+      Rotary_counter_2 = 0                  # RESET IT TO 0
+      LockRotary_2.release()               # and release lock
+               
+      if (NewCounter_2 !=0):               # Counter has CHANGED
+         TotalCount_2 = TotalCount_2 + NewCounter_2
+
+      LockRotary_3.acquire()               # get lock for rotary switch
+      NewCounter_3 = Rotary_counter_3         # get counter value
+      Rotary_counter_3 = 0                  # RESET IT TO 0
+      LockRotary_3.release()               # and release lock
+               
+      if (NewCounter_3 !=0):               # Counter has CHANGED
+         TotalCount_3 = TotalCount_3 + NewCounter_3
+
                                  
       if (cnt > 10):
         speed_0 = (TotalCount_0 /cnt)
-        print speed_0
+        speed_1 = (TotalCount_1 /cnt)
+        speed_2 = (TotalCount_2 /cnt)
+        speed_3 = (TotalCount_3 /cnt)
+        print speed_0, speed_1, speed_2, speed_3
         cnt = 0
         TotalCount_0 = 0
 
