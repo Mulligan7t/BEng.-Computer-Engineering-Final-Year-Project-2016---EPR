@@ -93,10 +93,10 @@ def drive(coX0, coX1, coY0, coY1):
 
 def encoderfeedback():
   global LFspeed, RFspeed, LBspeed, RBspeed
-  LFspeed = LFspeed + 0.1*(LFset-speed_0)
-  RFspeed = RFspeed + 0.1*(RFset-speed_1)
-  LBspeed = LBspeed + 0.1*(LBset-speed_2)
-  RBspeed = RBspeed + 0.1*(RBset-speed_3)
+  LFspeed = int(LFspeed + 0.1*(LFset-speed_0))
+  RFspeed = int(RFspeed + 0.1*(RFset-speed_1))
+  LBspeed = int(LBspeed + 0.1*(LBset-speed_2))
+  RBspeed = int(RBspeed + 0.1*(RBset-speed_3))
 
   if(LFspeed>254):
     LFspeed = 254
