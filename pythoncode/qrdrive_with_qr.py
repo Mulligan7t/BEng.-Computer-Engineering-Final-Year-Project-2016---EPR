@@ -16,8 +16,8 @@ import socket
 WHEEL_RADIUS=30
 WHEEL_SEPARATION_WIDTH = 93
 WHEEL_SEPARATION_LENGTH = 90
-linearX = 2000
-linearY = 00
+linearX = 000
+linearY = 2000
 angularZ = 0
 speedcalib = 2.55
 
@@ -105,7 +105,7 @@ def camqr():
 
 # main() function
 def main():
-#  camqr()
+  camqr()
 #  Address=("127.0.0.1",5000)
 #  s = socket.socket()
 #  try:
