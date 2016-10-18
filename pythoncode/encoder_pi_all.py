@@ -141,7 +141,7 @@ def rotary_interrupt_2(A_or_B):
          Rotary_counter_2 += 1                  # which input gave last interrupt
       else:                              # so depending on direction either
          Rotary_counter_2 -= 1                  # increase or decrease counter
-      LockRotary_0.release()                  # and release lock
+      LockRotary_2.release()                  # and release lock
    return                                 # THAT'S IT
 
 # Rotarty encoder interrupt:
