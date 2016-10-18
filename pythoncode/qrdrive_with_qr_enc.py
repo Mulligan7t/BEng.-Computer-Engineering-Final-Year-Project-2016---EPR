@@ -56,10 +56,10 @@ linearY = 2000
 angularZ = 0
 speedcalib = 2.55
 
-LFspeed = 100
-RFspeed = 100
-LBspeed = 100
-RBspeed = 100
+LFspeed = 0
+RFspeed = 0
+LBspeed = 0
+RBspeed = 0
 
 LFset = 0
 RFset = 0
