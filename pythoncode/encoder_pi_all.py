@@ -168,7 +168,7 @@ def rotary_interrupt_3(A_or_B):
          Rotary_counter_3 -= 1                  # increase or decrease counter
       LockRotary_3.release()                  # and release lock
    return                                 # THAT'S IT
-
+ 
 
 # Main loop. Demonstrate reading, direction and speed_0 of turning left/rignt
 def main():
