@@ -82,9 +82,17 @@ def drive(coX0, coX1, coY0, coY1):
   LBset = 255
   RBset = 255
 
+  LFset = LFset//8
+  RFset = RFset//8
+  LBset = LBset//8
+  RBset = RBset//8
+
+
+
   print "SET:   " + str(LFset) + " " + str(RFset) + " " + str(LBset) + " " + str(RBset) + "\r"
 
 def encoderfeedback():
+
   LFspeed = LFset + 1000
   RFspeed = RFset + 1000
   LBspeed = LBset + 1000
