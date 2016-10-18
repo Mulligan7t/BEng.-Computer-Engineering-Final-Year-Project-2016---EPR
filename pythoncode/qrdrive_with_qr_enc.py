@@ -14,10 +14,10 @@ import RPi.GPIO as GPIO
 import threading
 
                           # GPIO Ports
-Enc_0_A = 1               # Encoder input A: input GPIO 1 
-Enc_0_B = 0               # Encoder input B: input GPIO 0
-Enc_1_A = 21              # Encoder input A: input GPIO 21
-Enc_1_B = 20              # Encoder input B: input GPIO 20
+Enc_0_A = 21              # Encoder input A: input GPIO 21
+Enc_0_B = 20              # Encoder input B: input GPIO 20
+Enc_1_A = 1               # Encoder input A: input GPIO 1 
+Enc_1_B = 0               # Encoder input B: input GPIO 0
 Enc_2_A = 2               # Encoder input A: input GPIO 2 
 Enc_2_B = 3               # Encoder input B: input GPIO 3
 Enc_3_A = 14              # Encoder input A: input GPIO 14 
@@ -78,9 +78,9 @@ def drive(coX0, coX1, coY0, coY1):
   coYdiff = coY0-coY1
     
   LFset = 255 
-  RFset = 255
-  LBset = 255
-  RBset = 255
+  RFset = 0
+  LBset = 0
+  RBset = 0
 
   LFset = LFset//8
   RFset = RFset//8
