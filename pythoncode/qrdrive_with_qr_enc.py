@@ -77,10 +77,10 @@ def drive(coX0, coX1, coY0, coY1):
   coXdiff = coX0-coX1
   coYdiff = coY0-coY1
     
-  LFset = 0 
+  LFset = 255 
   RFset = 255
-  LBset = 0
-  RBset = 0
+  LBset = 255
+  RBset = 255
 
   print "SET:   " + str(LFset) + " " + str(RFset) + " " + str(LBset) + " " + str(RBset) + "\r"
 
