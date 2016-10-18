@@ -92,11 +92,11 @@ def drive(coX0, coX1, coY0, coY1):
   print "SET:   " + str(LFset) + " " + str(RFset) + " " + str(LBset) + " " + str(RBset) + "\r"
 
 def encoderfeedback():
-
-  LFspeed = LFset + 1000
-  RFspeed = RFset + 1000
-  LBspeed = LBset + 1000
-  RBspeed = RBset + 1000
+  global LFspeed, RFspeed, LBspeed, RBspeed
+  LFspeed = LFspeed + 0.1(LFset-speed_0)
+  RFspeed = RFspeed + 0.1(RFset-speed_1)
+  LBspeed = LBspeed + 0.1(LBset-speed_2)
+  RBspeed = RBspeed + 0.1(RBset-speed_3)
   print "PWM:   " + str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
   return str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
 
@@ -306,8 +306,7 @@ def main():
 
   print "The server is not running"
   
-  global Rotary_counter_0, LockRotary_0, Rotary_counter_1, LockRotary_1,Rotary_counter_2, LockRotary_2, Rotary_counter_3, LockRotary_3
-   
+  global Rotary_counter_0, LockRotary_0, Rotary_counter_1, LockRotary_1,Rotary_counter_2, LockRotary_2, Rotary_counter_3, LockRotary_3, speed_0, speed_1, speed_2, speed_3
 
   TotalCount_0 = 0                            # Current TotalCount_0   
   NewCounter_0 = 0                            # for faster reading with locks           
