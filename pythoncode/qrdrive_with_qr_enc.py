@@ -82,10 +82,10 @@ def drive(coX0, coX1, coY0, coY1):
   LBset = 0
   RBset = 0
 
-  LFset = LFset//8
-  RFset = RFset//8
-  LBset = LBset//8
-  RBset = RBset//8
+  LFset = LFset//7
+  RFset = RFset//7
+  LBset = LBset//7
+  RBset = RBset//7
 
 
 
