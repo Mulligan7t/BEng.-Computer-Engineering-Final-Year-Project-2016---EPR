@@ -87,7 +87,7 @@ def rotary_interrupt_0(A_or_B):
 
    if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
       LockRotary_0.acquire()                  # get lock 
-      if A_or_B == Enc_B:                     # Turning direction depends on 
+      if A_or_B == Enc_0_B:                     # Turning direction depends on 
          Rotary_counter_0 += 1                  # which input gave last interrupt
       else:                              # so depending on direction either
          Rotary_counter_0 -= 1                  # increase or decrease counter
@@ -112,7 +112,7 @@ def rotary_interrupt_1(A_or_B):
 
    if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
       LockRotary_1.acquire()                  # get lock 
-      if A_or_B == Enc_B:                     # Turning direction depends on 
+      if A_or_B == Enc_1_B:                     # Turning direction depends on 
          Rotary_counter_1 += 1                  # which input gave last interrupt
       else:                              # so depending on direction either
          Rotary_counter_1 -= 1                  # increase or decrease counter
@@ -137,7 +137,7 @@ def rotary_interrupt_2(A_or_B):
 
    if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
       LockRotary_2.acquire()                  # get lock 
-      if A_or_B == Enc_B:                     # Turning direction depends on 
+      if A_or_B == Enc_2_B:                     # Turning direction depends on 
          Rotary_counter_2 += 1                  # which input gave last interrupt
       else:                              # so depending on direction either
          Rotary_counter_2 -= 1                  # increase or decrease counter
@@ -162,7 +162,7 @@ def rotary_interrupt_3(A_or_B):
 
    if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
       LockRotary_3.acquire()                  # get lock 
-      if A_or_B == Enc_B:                     # Turning direction depends on 
+      if A_or_B == Enc_3_B:                     # Turning direction depends on 
          Rotary_counter_3 += 1                  # which input gave last interrupt
       else:                              # so depending on direction either
          Rotary_counter_3 -= 1                  # increase or decrease counter
