@@ -97,6 +97,17 @@ def encoderfeedback():
   RFspeed = RFspeed + 0.1*(RFset-speed_1)
   LBspeed = LBspeed + 0.1*(LBset-speed_2)
   RBspeed = RBspeed + 0.1*(RBset-speed_3)
+
+  if(LFspeed>254):
+    LFspeed = 254
+  if(RFspeed>254):
+    RFspeed = 254
+  if(LBspeed>254):
+    LBspeed = 254
+  if(RBspeed>254):
+    RBspeed = 254
+
+
   print "PWM:   " + str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
   return str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
 
