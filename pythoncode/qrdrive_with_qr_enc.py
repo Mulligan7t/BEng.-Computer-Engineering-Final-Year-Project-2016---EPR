@@ -78,9 +78,9 @@ def drive(coX0, coX1, coY0, coY1):
   coYdiff = coY0-coY1
     
   LFset = 255 
-  RFset = 0
-  LBset = 0
-  RBset = 0
+  RFset = 255 
+  LBset = 255
+  RBset = 255
 
   LFset = LFset//7
   RFset = RFset//7
