@@ -20,11 +20,11 @@ Enc_0_B = 0                   # Encoder input B: input GPIO 3
 Enc_1_A = 21             # Encoder input A: input GPIO 2 
 Enc_1_B = 20                   # Encoder input B: input GPIO 3
 
-Enc_2_A = 14              # Encoder input A: input GPIO 2 
-Enc_2_B = 15                 # Encoder input B: input GPIO 3
+Enc_3_A = 14              # Encoder input A: input GPIO 2 
+Enc_3_B = 15                 # Encoder input B: input GPIO 3
 
-Enc_3_A = 2              # Encoder input A: input GPIO 2 
-Enc_3_B = 3                   # Encoder input B: input GPIO 3
+Enc_2_A = 2              # Encoder input A: input GPIO 2 
+Enc_2_B = 3                   # Encoder input B: input GPIO 3
 
 
 
@@ -74,8 +74,8 @@ def drive(coX0, coX1, coY0, coY1):
   coXdiff = coX0-coX1
   coYdiff = coY0-coY1
     
-  LFspeed = 255
-  RFspeed = 0
+  LFspeed = 0 
+  RFspeed = 255
   LBspeed = 0
   RBspeed = 0
 
@@ -439,10 +439,10 @@ def main():
 
                                
     if (cnt > 10):
-      speed_0 = (TotalCount_0 /cnt)
-      speed_1 = (TotalCount_1 /cnt)
-      speed_2 = (TotalCount_2 /cnt)
-      speed_3 = (TotalCount_3 /cnt)
+      speed_0 = (TotalCount_0//cnt)
+      speed_1 = (TotalCount_1//cnt)
+      speed_2 = (TotalCount_2//cnt)
+      speed_3 = (TotalCount_3//cnt)
       print speed_0, speed_1, speed_2, speed_3
       cnt = 0
       TotalCount_0 = 0
