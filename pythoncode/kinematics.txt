@@ -1,0 +1,12 @@
+wheel_front_left = (1/WHEEL_RADIUS) * (linear.x – linear.y – (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angular.z);
+
+wheel_front_right = (1/WHEEL_RADIUS) * (linear.x + linear.y + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angular.z);
+
+wheel_rear_left = (1/WHEEL_RADIUS) * (linear.x + linear.y – (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angular.z);
+
+wheel_rear_right = (1/WHEEL_RADIUS) * (linear.x – linear.y + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angular.z);
+
+
+http://robotsforroboticists.com/drive-kinematics/
+
+http://research.ijcaonline.org/volume113/number3/pxc3901586.pdf
