@@ -95,7 +95,7 @@ def drive(coX0, coX1, coY0, coY1):
 def encoderfeedback():
   global LFspeed, RFspeed, LBspeed, RBspeed
   LFspeed = LFspeed + math.ceil(0.1*(LFset-speed_0))
-  RFspeed = RFspeed + math.ceil(0.1*(RFset-speed_1))
+  RFspeed = RFspeed + math.ceil(0.1*(RFset-speed_1)) 
   LBspeed = LBspeed + math.ceil(0.1*(LBset-speed_2))
   RBspeed = RBspeed + math.ceil(0.1*(RBset-speed_3))
 
