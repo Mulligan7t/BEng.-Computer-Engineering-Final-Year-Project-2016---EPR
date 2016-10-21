@@ -95,10 +95,10 @@ def drive(coX0, coX1, coY0, coY1):
 
 def encoderfeedback():
   global LFspeed, RFspeed, LBspeed, RBspeed
-  LFspeed = int(LFspeed + math.ceil(0.1*(LFset-speed_0)))
-  RFspeed = int(RFspeed + math.ceil(0.1*(RFset-speed_1)))
-  LBspeed = int(LBspeed + math.ceil(0.1*(LBset-speed_2)))
-  RBspeed = int(RBspeed + math.ceil(0.1*(RBset-speed_3)))
+  LFspeed = LFspeed + math.ceil(0.1*(LFset-speed_0))
+  RFspeed = RFspeed + math.ceil(0.1*(RFset-speed_1)) 
+  LBspeed = LBspeed + math.ceil(0.1*(LBset-speed_2))
+  RBspeed = RBspeed + math.ceil(0.1*(RBset-speed_3))
 
   if(LFspeed>254):
     LFspeed = 254
@@ -110,8 +110,8 @@ def encoderfeedback():
     RBspeed = 254
 
 
-  print "PWM:   " + str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
-  return str(LFspeed) + " " + str(RFspeed) + " " + str(LBspeed) + " " + str(RBspeed) + "\r"
+  print "PWM:   " + str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
+  return str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed) + "\r"
 
 
 def camqr():
