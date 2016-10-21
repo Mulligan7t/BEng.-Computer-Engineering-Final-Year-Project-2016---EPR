@@ -110,7 +110,7 @@ void setup()
 	GyroInit();
 	inputString.reserve(200); // reserve 200 bytes for the inputString:
 
-	Serial.println("start");
+	//Serial.println("start");
 	timer = micros();
 }
 
@@ -588,7 +588,7 @@ void sensorloop(int printout)
 void delaysensor(int t){
 	for (int x = 0; x < t/d; x++)
 	{
-		sensorloop(0);
+		sensorloop(1);
 	}
 }
 
