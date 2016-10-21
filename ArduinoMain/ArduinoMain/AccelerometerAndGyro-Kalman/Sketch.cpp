@@ -383,7 +383,7 @@ void recvWithEndMarker() {
 void showNewData() {
 	if (newData == true) {
 		parseData();
-		showParsedData();
+		//showParsedData();
 		newData = false;
 	}
 }
