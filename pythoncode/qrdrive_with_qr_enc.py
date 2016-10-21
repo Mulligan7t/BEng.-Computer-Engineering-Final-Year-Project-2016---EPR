@@ -332,7 +332,7 @@ def main():
   TotalCount_3 = 0                            # Current TotalCount_3   
   NewCounter_3 = 0                            # for faster reading with locks           
   speed_3 = 0
-  cnt = 0 
+  cntSpeed = 0 
 
   init()                              # Init interrupts, GPIO, ...
 
@@ -431,7 +431,7 @@ def main():
         raise SystemExit
 
 #    sleep(0.1)                        # sleep 100 msec
-    cnt = cnt +1
+    cntSpeed = cntSpeed +1
                                   # because of threading make sure no thread
                                   # changes value until we get them
                                   # and reset them
@@ -469,13 +469,13 @@ def main():
        TotalCount_3 = TotalCount_3 + NewCounter_3
 
                                
-    if (cnt > 10):
-      speed_0 = (TotalCount_0/cnt)
-      speed_1 = (TotalCount_1/cnt)
-      speed_2 = (TotalCount_2/cnt)
-      speed_3 = (TotalCount_3/cnt)
+    if (cntSpeed > 10):
+      speed_0 = (TotalCount_0/cntSpeed)
+      speed_1 = (TotalCount_1/cntSpeed)
+      speed_2 = (TotalCount_2/cntSpeed)
+      speed_3 = (TotalCount_3/cntSpeed)
       print speed_0, speed_1, speed_2, speed_3
-      cnt = 0
+      cntSpeed = 0
       TotalCount_0 = 0
       TotalCount_1 = 0
       TotalCount_2 = 0
