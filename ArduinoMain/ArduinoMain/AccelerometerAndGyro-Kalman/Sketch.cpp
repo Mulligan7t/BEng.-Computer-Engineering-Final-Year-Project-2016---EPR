@@ -97,7 +97,7 @@ int dir2[4] = {A2,A1,2,6};
 //initializes the gyroscope
 void setup()
 {
-	#if 1
+	#if 0
 	newlinechar = "\n";
 	#endif
 
