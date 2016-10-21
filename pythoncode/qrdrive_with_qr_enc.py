@@ -15,10 +15,10 @@ import threading
 import math
 
                           # GPIO Ports
-Enc_0_A = 21              # Encoder input A: input GPIO 21
-Enc_0_B = 20              # Encoder input B: input GPIO 20
-Enc_1_A = 1               # Encoder input A: input GPIO 1 
-Enc_1_B = 0               # Encoder input B: input GPIO 0
+Enc_1_A = 21              # Encoder input A: input GPIO 21
+Enc_1_B = 20              # Encoder input B: input GPIO 20
+Enc_0_A = 1               # Encoder input A: input GPIO 1 
+Enc_0_B = 0               # Encoder input B: input GPIO 0
 Enc_2_A = 2               # Encoder input A: input GPIO 2 
 Enc_2_B = 3               # Encoder input B: input GPIO 3
 Enc_3_A = 14              # Encoder input A: input GPIO 14 
@@ -91,7 +91,7 @@ def drive(coX0, coX1, coY0, coY1):
 
 
 
-  print "SET:   " + str(LFset) + " " + str(RFset) + " " + str(LBset) + " " + str(RBset) + "\r"
+  #print "SET:   " + str(LFset) + " " + str(RFset) + " " + str(LBset) + " " + str(RBset) + "\r"
 
 def encoderfeedback():
   global LFspeed, RFspeed, LBspeed, RBspeed
@@ -110,7 +110,7 @@ def encoderfeedback():
     RBspeed = 254
 
 
-  print "PWM:   " + str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
+  #print "PWM:   " + str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
   return str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
 
 def camqr():
@@ -391,8 +391,10 @@ def main():
   while True:
     try:
       line = ser.readline()
+      print "line: ",
+      print line,
+      
       data = [float(val) for val in line.split()]
-     
       # print data
       frameCnt = int(cnt / 10)
 
