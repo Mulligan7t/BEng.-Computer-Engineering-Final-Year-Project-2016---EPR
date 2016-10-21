@@ -31,7 +31,6 @@ void GyroRead();
 void writeTo(int DEVICE, byte address, byte val);
 void readFrom(int DEVICE, byte address, int num, byte buff[]);
 
-
 #define RESTRICT_PITCH // Comment out to restrict roll to ±90deg instead - please read: http://www.freescale.com/files/sensors/doc/app_note/AN3461.pdf
 // I2C library, Gyroscope ITG3200
 #define GYRO 0x68 //  when AD0 is connected to GND ,gyro address is 0x68. #define GYRO 0x69   when AD0 is connected to VCC ,gyro address is 0x69
@@ -66,7 +65,7 @@ String inputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 String newlinechar = "\n\r";
 
-float speedFromPC[4] = {100.0,100.0,100.0,100.0};
+float speedFromPC[4] = {0.0,0.0,0.0,0.0};
 char recvChar;
 char endMarker = '>';
 boolean newData = false;
@@ -76,11 +75,11 @@ char receivedChars[numChars]; // an array to store the received data
 // Motor 1
 int dir1PinLF = 12;
 int dir2PinLF = A2;
-int speedPinLF = 9; // Needs to be a PWM pin to be able to control motor speed
+int speedPinLF = 10; // Needs to be a PWM pin to be able to control motor speed
 // Motor 2
 int dir1PinRF = A0;
 int dir2PinRF = A1;
-int speedPinRF = 10; // Needs to be a PWM pin to be able to control motor speed
+int speedPinRF = 9; // Needs to be a PWM pin to be able to control motor speed
 // Motor 3
 int dir1PinLB = 4;
 int dir2PinLB = 2;
@@ -90,7 +89,7 @@ int dir1PinRB = 5;
 int dir2PinRB = 6;
 int speedPinRB = 11; // Needs to be a PWM pin to be able to control motor speed
 
-int speedPin[4] = {9,10,3,11};
+int speedPin[4] = {10,9,3,11};
 int dir1[4] = {12,A0,4,5};
 int dir2[4] = {A2,A1,2,6};
 
@@ -101,7 +100,8 @@ void setup()
 	#if 1
 	newlinechar = "\n";
 	#endif
-	
+
+		
 	Serial.begin(115200);
 	Wire.begin();
 
@@ -110,6 +110,7 @@ void setup()
 	GyroInit();
 	inputString.reserve(200); // reserve 200 bytes for the inputString:
 
+	Serial.println("start");
 	timer = micros();
 }
 
@@ -333,6 +334,8 @@ void readFrom(int DEVICE, byte address, int num, byte buff[]) {
 	Wire.endTransmission(); //end transmission
 }
 
+
+
 void wheeldir (int wheelnum) {
 	if (speedFromPC[wheelnum]>0)
 	{
@@ -349,6 +352,7 @@ void wheeldir (int wheelnum) {
 		digitalWrite(dir2[wheelnum],HIGH);
 	}
 	analogWrite(speedPin[wheelnum], int(abs(speedFromPC[wheelnum])));
+
 }
 
 
@@ -379,7 +383,7 @@ void recvWithEndMarker() {
 void showNewData() {
 	if (newData == true) {
 		parseData();
-		//showParsedData();
+		showParsedData();
 		newData = false;
 	}
 }
@@ -584,7 +588,7 @@ void sensorloop(int printout)
 void delaysensor(int t){
 	for (int x = 0; x < t/d; x++)
 	{
-		sensorloop(1);
+		sensorloop(0);
 	}
 }
 
@@ -599,6 +603,8 @@ void loop() {
 		wheeldir(x);
 	}
 
+
+	
 	#if 0
 	
 	analogWrite(speedPinLF, speedall);//Sets speed variable via PWM
