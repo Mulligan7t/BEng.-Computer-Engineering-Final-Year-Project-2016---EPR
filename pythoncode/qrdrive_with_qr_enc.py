@@ -52,8 +52,8 @@ LockRotary_3 = threading.Lock()     # create lock for rotary switch
 WHEEL_RADIUS=30
 WHEEL_SEPARATION_WIDTH = 93
 WHEEL_SEPARATION_LENGTH = 90
-linearX = 000
-linearY = 2000
+linearX = 000                       #Forward (+ to the front)
+linearY = -2000                      #Sideways (+ to the left)
 angularZ = 0
 speedcalib = 2.55
 
@@ -77,11 +77,12 @@ def drive(coX0, coX1, coY0, coY1):
 
   coXdiff = coX0-coX1
   coYdiff = coY0-coY1
-    
-  LFset = 255 
-  RFset = 255 
-  LBset = 255
-  RBset = 255
+  
+  if (True):
+    LFset = 0 
+    RFset = 255 
+    LBset = 0
+    RBset = 0
 
   LFset = LFset//7
   RFset = RFset//7
