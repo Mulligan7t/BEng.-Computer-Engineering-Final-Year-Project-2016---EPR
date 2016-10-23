@@ -78,11 +78,11 @@ def drive(coX0, coX1, coY0, coY1):
   coXdiff = coX0-coX1
   coYdiff = coY0-coY1
   
-  if (True):
-    LFset = 0 
+  if (False):
+    LFset = 255 
     RFset = 255 
-    LBset = 0
-    RBset = 0
+    LBset = 255
+    RBset = 255
 
   LFset = LFset//7
   RFset = RFset//7
@@ -110,7 +110,7 @@ def encoderfeedback():
     RBspeed = 254
 
 
-  #print "PWM:   " + str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
+  print "PWM:   " + str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
   return str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
 
 def camqr():
