@@ -53,8 +53,8 @@ WHEEL_RADIUS=30
 WHEEL_SEPARATION_WIDTH = 93
 WHEEL_SEPARATION_LENGTH = 90
 linearX = 000                       #Forward (+ to the front)
-linearY = -2000                      #Sideways (+ to the left)
-angularZ = 0
+linearY = 000                      #Sideways (+ to the left)
+angularZ = 30
 speedcalib = 2.55
 
 LFspeed = 0
@@ -108,6 +108,15 @@ def encoderfeedback():
     LBspeed = 254
   if(RBspeed>254):
     RBspeed = 254
+
+  if(LFspeed<-254):
+    LFspeed = -254
+  if(RFspeed<-254):
+    RFspeed = -254
+  if(LBspeed<-254):
+    LBspeed = -254
+  if(RBspeed<-254):
+    RBspeed = -254
 
 
   print "PWM:   " + str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
