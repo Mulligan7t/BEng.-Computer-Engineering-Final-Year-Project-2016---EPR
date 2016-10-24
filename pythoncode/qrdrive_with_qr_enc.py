@@ -61,8 +61,10 @@ min_dynamic = 150 #lower than this and will stall even after rotation has begun
 
 scaling_factor = 1000
 
+magnetic_heading = 0
+
 def drive(coY0, coY1, coX0, coX1):
-  global motor_setpoint
+  global motor_setpoint, magnetic_heading
 
   coXdiff = coX1-coX0
   coYdiff = coY1-coY0
@@ -82,6 +84,9 @@ def drive(coY0, coY1, coX0, coX1):
   linearX = 0
   linearY = 0
   angularZ = math.radians(heading)
+
+  print "magnetic_heading :",
+  print magnetic_heading
 
   motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
   motor_setpoint[right_front] = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
@@ -441,6 +446,7 @@ def main():
 
       
       if(len(data) == 10):
+        magnetic_heading = data[8]
         dt = data[9]
         accXcurr = data[0]- calib
         totvelX += accXcurr*dt
