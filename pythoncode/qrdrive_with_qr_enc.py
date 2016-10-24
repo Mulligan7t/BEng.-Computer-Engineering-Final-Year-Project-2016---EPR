@@ -357,18 +357,9 @@ def main():
   
   global rotary_counters, lock_rotary, encoder_reading
 
-  TotalCount_0 = 0                            # Current TotalCount_0   
-  NewCounter_0 = 0                            # for faster reading with locks           
-  encoder_reading[left_front] = 0
-  TotalCount_1 = 0                            # Current TotalCount_1   
-  NewCounter_1 = 0                            # for faster reading with locks           
-  encoder_reading[right_front] = 0
-  TotalCount_2 = 05                           # Current TotalCount_2   
-  NewCounter_2 = 0                            # for faster reading with locks           
-  encoder_reading[left_back] = 0
-  TotalCount_3 = 0                            # Current TotalCount_3   
-  NewCounter_3 = 0                            # for faster reading with locks           
-  encoder_reading[right_back] = 0
+  total_count = [0,0,0,0]
+  new_counter = [0,0,0,0]
+
   cntSpeed = 0 
 
   init()                              # Init interrupts, GPIO, ...
@@ -476,49 +467,49 @@ def main():
                                   # and reset them
                                   
     lock_rotary[left_front].acquire()               # get lock for rotary switch
-    NewCounter_0 = rotary_counters[left_front]      # get counter value
+    new_counter[0] = rotary_counters[left_front]      # get counter value
     rotary_counters[left_front] = 0                 # RESET IT TO 0
     lock_rotary[left_front].release()               # and release lock
              
-    if (NewCounter_0 !=0):               # Counter has CHANGED
-       TotalCount_0 = TotalCount_0 + NewCounter_0
+    if (new_counter[0] !=0):               # Counter has CHANGED
+       total_count[0] = total_count[0] + new_counter[0]
 
     lock_rotary[right_front].acquire()               # get lock for rotary switch
-    NewCounter_1 = rotary_counters[right_front]      # get counter value
+    new_counter[1] = rotary_counters[right_front]      # get counter value
     rotary_counters[right_front] = 0                 # RESET IT TO 0
     lock_rotary[right_front].release()               # and release lock
              
-    if (NewCounter_1 !=0):               # Counter has CHANGED
-       TotalCount_1 = TotalCount_1 + NewCounter_1
+    if (new_counter[1] !=0):               # Counter has CHANGED
+       total_count[1] = total_count[1] + new_counter[1]
 
     lock_rotary[left_back].acquire()               # get lock for rotary switch
-    NewCounter_2 = rotary_counters[left_back]      # get counter value
+    new_counter[2] = rotary_counters[left_back]      # get counter value
     rotary_counters[left_back] = 0                 # RESET IT TO 0
     lock_rotary[left_back].release()               # and release lock
              
-    if (NewCounter_2 !=0):               # Counter has CHANGED
-       TotalCount_2 = TotalCount_2 + NewCounter_2
+    if (new_counter[2] !=0):               # Counter has CHANGED
+       total_count[2] = total_count[2] + new_counter[2]
 
     lock_rotary[right_back].acquire()               # get lock for rotary switch
-    NewCounter_3 = rotary_counters[right_back]      # get counter value
+    new_counter[3] = rotary_counters[right_back]      # get counter value
     rotary_counters[right_back] = 0                 # RESET IT TO 0
     lock_rotary[right_back].release()               # and release lock
              
-    if (NewCounter_3 !=0):               # Counter has CHANGED
-       TotalCount_3 = TotalCount_3 + NewCounter_3
+    if (new_counter[3] !=0):               # Counter has CHANGED
+       total_count[3] = total_count[3] + new_counter[3]
 
                                
     if (cntSpeed > 10):
-      encoder_reading[left_front] = (TotalCount_0/cntSpeed)
-      encoder_reading[right_front] = (TotalCount_1/cntSpeed)
-      encoder_reading[left_back] = (TotalCount_2/cntSpeed)
-      encoder_reading[right_back] = (TotalCount_3/cntSpeed)
+      encoder_reading[left_front] = (total_count[0]/cntSpeed)
+      encoder_reading[right_front] = (total_count[1]/cntSpeed)
+      encoder_reading[left_back] = (total_count[2]/cntSpeed)
+      encoder_reading[right_back] = (total_count[3]/cntSpeed)
       print "enc_read: " + str(int(encoder_reading[left_front]*100)) + "  " + str(int(encoder_reading[right_front]*100)) + "  " + str(int(encoder_reading[left_back]*100)) + "  " + str(int(encoder_reading[right_back]*100))
       cntSpeed = 0
-      TotalCount_0 = 0
-      TotalCount_1 = 0
-      TotalCount_2 = 0
-      TotalCount_3 = 0
+      total_count[0] = 0
+      total_count[1] = 0
+      total_count[2] = 0
+      total_count[3] = 0
 
       
 
