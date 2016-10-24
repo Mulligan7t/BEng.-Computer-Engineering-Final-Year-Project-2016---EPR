@@ -140,7 +140,7 @@ def encoderfeedback():
       PWMoutput[x_wheel] = math.copysign(254, motor_setpoint[x_wheel]) # return value of 254 with the sign of motor_setpoint[x_wheel]
 
 
-  PWMoutput[left_front] = PWMoutput[right_front] = PWMoutput[left_back] = PWMoutput[right_back] = 254
+  #PWMoutput[left_front] = PWMoutput[right_front] = PWMoutput[left_back] = PWMoutput[right_back] = 254
   #print "encoder_reading[left_front]:  " + str(encoder_reading[left_front])
   
   print "PWM:   " + str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
