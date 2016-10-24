@@ -66,6 +66,8 @@ def drive(coX0, coX1, coY0, coY1):
 
   coXdiff = coX0-coX1
   coYdiff = coY0-coY1
+  print coXdiff
+  print coYdiff
 
   linearX = 2000
   linearY = 0
