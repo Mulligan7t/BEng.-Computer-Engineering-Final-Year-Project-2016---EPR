@@ -94,10 +94,11 @@ def drive(coX0, coX1, coY0, coY1):
     LBset = 255
     RBset = 255
 
-  LFset = LFset//7
-  RFset = RFset//7
-  LBset = LBset//7
-  RBset = RBset//7
+  encoderRate = 7
+  LFset = LFset//encoderRate
+  RFset = RFset//encoderRate
+  LBset = LBset//encoderRate
+  RBset = RBset//encoderRate
 
 
 
@@ -137,23 +138,15 @@ def encoderfeedback():
     LFspeed = math.copysign(min_dynamic, LFset) # return value of min_dynamic with the sign of LFset
 
   
-  if(LFspeed>254):
-    LFspeed = 254
-  if(RFspeed>254):
-    RFspeed = 254
-  if(LBspeed>254):
-    LBspeed = 254
-  if(RBspeed>254):
-    RBspeed = 254
+  if(math.fabs(LFspeed)>254):
+    LFspeed = math.copysign(254, LFset) # return value of 254 with the sign of LFset
+  if(math.fabs(RFspeed)>254):
+    RFspeed = math.copysign(254, RFset) # return value of 254 with the sign of RFset
+  if(math.fabs(LBspeed)>254):
+    LBspeed = math.copysign(254, LBset) # return value of 254 with the sign of LBset
+  if(math.fabs(RBspeed)>254):
+    RBspeed = math.copysign(254, RBset) # return value of 254 with the sign of RBset
 
-  if(LFspeed<-254):
-    LFspeed = -254
-  if(RFspeed<-254):
-    RFspeed = -254
-  if(LBspeed<-254):
-    LBspeed = -254
-  if(RBspeed<-254):
-    RBspeed = -254
 
   print "speed_0:  " + str(speed_0)
   print "PWM:   " + str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
@@ -248,8 +241,6 @@ def init():
    GPIO.add_event_detect(Enc_3_B, GPIO.RISING, callback=rotary_interrupt_3)             # NO bouncetime 
 
    return
-
-
 
 # Rotarty encoder interrupt:
 # this one is called for both inputs from rotary switch (A and B)
