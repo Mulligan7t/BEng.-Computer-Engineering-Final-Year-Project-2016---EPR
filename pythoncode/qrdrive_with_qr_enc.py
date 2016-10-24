@@ -111,7 +111,7 @@ def encoderfeedback():
 
   LFintegral = LFintegral + LFerror
 
-  if((LFerror == 0)||(LFset != LFset)):
+  if((LFerror == 0) or (LFset != LFset)):
     LFintegral = 0
 
   LFderivative = LFerror - LFprev_error
