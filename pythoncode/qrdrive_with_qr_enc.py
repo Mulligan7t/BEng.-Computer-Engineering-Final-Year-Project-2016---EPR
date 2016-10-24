@@ -93,9 +93,7 @@ def drive(coX0, coX1, coY0, coY1):
 
   encoderRate = 7
 
-  for x_wheel in xrange(3):
-    print "x_wheel: ",
-    print x_wheel
+  for x_wheel in xrange(4):
     motor_setpoint[x_wheel] = motor_setpoint[x_wheel]//encoderRate
 
   print "SET:   " + str(motor_setpoint[left_front]) + " " + str(motor_setpoint[right_front]) + " " + str(motor_setpoint[left_back]) + " " + str(motor_setpoint[right_back]) + "\r"
@@ -109,41 +107,38 @@ def encoderfeedback():
 
   #if the wheel is not turning i.e. (measured) encoder_reading[left_front] = 0.0, then set to min_interia
 
-#  for x_wheel in xrange(3):
+  current_error = [0,0,0,0]
+  derivative_error = [0,0,0,0]
+  for x_wheel in xrange(4):
+    encoder_reading[x_wheel] = motor_setpoint[x_wheel]-encoder_reading[x_wheel]
 
-  LFerror = motor_setpoint[left_front]-encoder_reading[left_front]
-  RFerror = motor_setpoint[right_front]-encoder_reading[right_front]
-  LBerror = motor_setpoint[left_back]-encoder_reading[left_back]
-  RBerror = motor_setpoint[right_back]-encoder_reading[right_back]
+  for x_wheel in xrange(4):
+    integral_error[x_wheel] = integral_error[x_wheel] + encoder_reading[x_wheel]
 
-  integral_error[left_front] = integral_error[left_front] + LFerror
+  for x_wheel in xrange(4):
+    if((encoder_reading[x_wheel] < 0.5) or (integral_error[x_wheel] > 254)):
+      integral_error[x_wheel] = 0
 
-  if((LFerror < 0.5) or (integral_error[left_front] > 254)):
-    integral_error[left_front] = 0
+  for x_wheel in xrange(4):
+    derivative_error[x_wheel] = encoder_reading[x_wheel] - prev_error[x_wheel]
+    prev_error[x_wheel] = encoder_reading[x_wheel]
+    PWMoutput[x_wheel] = PWMoutput[x_wheel] + (Kp*encoder_reading[x_wheel] + Ki*integral_error[x_wheel] + Kd*derivative_error[x_wheel])
+  #print "encoder_reading[x_wheel]: " + str(encoder_reading[x_wheel]),
+  #print "  integral_error[x_wheel]: " + str(integral_error[x_wheel]),
+  #print "  derivative_error[x_wheel]: " + str(derivative_error[x_wheel])
 
-  LFderivative = LFerror - prev_error[left_front]
-  prev_error[left_front] = LFerror
+  for x_wheel in xrange(4):  
+    if(encoder_reading[x_wheel]==0 and math.fabs(motor_setpoint[x_wheel]) > 0):
+      PWMoutput[x_wheel] = math.copysign(min_interia, motor_setpoint[x_wheel]) # return value of min_interia with the sign of motor_setpoint[x_wheel]
+    #print "PWMoutput[x_wheel] set to min_interia-----------------"
 
-  PWMoutput[left_front] = PWMoutput[left_front] + (Kp*LFerror + Ki*integral_error[left_front] + Kd*LFderivative)
-  #print "LFerror: " + str(LFerror),
-  #print "  integral_error[left_front]: " + str(integral_error[left_front]),
-  #print "  LFderv: " + str(LFderivative)
-  if(encoder_reading[left_front]==0 and math.fabs(motor_setpoint[left_front]) > 0):
-    PWMoutput[left_front] = math.copysign(min_interia, motor_setpoint[left_front]) # return value of min_interia with the sign of motor_setpoint[left_front]
-    #print "PWMoutput[left_front] set to min_interia-----------------"
-
-  if(math.fabs(motor_setpoint[left_front]) > 0 and math.fabs(encoder_reading[left_front])>1.0 and math.fabs(PWMoutput[left_front]) <min_dynamic):
-    PWMoutput[left_front] = math.copysign(min_dynamic, motor_setpoint[left_front]) # return value of min_dynamic with the sign of motor_setpoint[left_front]
+    if(math.fabs(motor_setpoint[x_wheel]) > 0 and math.fabs(encoder_reading[x_wheel])>1.0 and math.fabs(PWMoutput[x_wheel]) <min_dynamic):
+      PWMoutput[x_wheel] = math.copysign(min_dynamic, motor_setpoint[x_wheel]) # return value of min_dynamic with the sign of motor_setpoint[x_wheel]
 
   
-  if(math.fabs(PWMoutput[left_front])>254):
-    PWMoutput[left_front] = math.copysign(254, motor_setpoint[left_front]) # return value of 254 with the sign of motor_setpoint[left_front]
-  if(math.fabs(PWMoutput[right_front])>254):
-    PWMoutput[right_front] = math.copysign(254, motor_setpoint[right_front]) # return value of 254 with the sign of motor_setpoint[right_front]
-  if(math.fabs(PWMoutput[left_back])>254):
-    PWMoutput[left_back] = math.copysign(254, motor_setpoint[left_back]) # return value of 254 with the sign of motor_setpoint[left_back]
-  if(math.fabs(PWMoutput[right_back])>254):
-    PWMoutput[right_back] = math.copysign(254, motor_setpoint[right_back]) # return value of 254 with the sign of motor_setpoint[right_back]
+    if(math.fabs(PWMoutput[x_wheel])>254):
+      PWMoutput[x_wheel] = math.copysign(254, motor_setpoint[x_wheel]) # return value of 254 with the sign of motor_setpoint[x_wheel]
+
 
   PWMoutput[left_front] = PWMoutput[right_front] = PWMoutput[left_back] = PWMoutput[right_back] = 254
   #print "encoder_reading[left_front]:  " + str(encoder_reading[left_front])
