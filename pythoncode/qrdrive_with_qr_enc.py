@@ -63,15 +63,19 @@ min_dynamic = 150 #lower than this and will stall even after rotation has begun
 
 def drive(coX0, coX1, coY0, coY1):
   global motor_setpoint
- 
+
+  coXdiff = coX0-coX1
+  coYdiff = coY0-coY1
+
+  linearX = 2000
+  linearY = 0
+  angularZ = 0
+   
   motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
   motor_setpoint[right_front] = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
   motor_setpoint[left_back] = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
   motor_setpoint[right_back] = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
 
-  coXdiff = coX0-coX1
-  coYdiff = coY0-coY1
-  
   if (False):
     motor_setpoint[left_front] = 255 
     motor_setpoint[right_front] = 255 
