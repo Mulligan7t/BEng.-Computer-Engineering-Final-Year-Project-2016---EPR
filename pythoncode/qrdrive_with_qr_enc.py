@@ -59,7 +59,7 @@ prev_error = [0,0,0,0]
 min_interia = 254 #minimum PWM to break intertia and start turning
 min_dynamic = 150 #lower than this and will stall even after rotation has begun
 
-
+scaling_factor = 2000
 
 def drive(coX0, coX1, coY0, coY1):
   global motor_setpoint
@@ -69,8 +69,8 @@ def drive(coX0, coX1, coY0, coY1):
   print coXdiff
   print coYdiff
 
-  linearX = 2000
-  linearY = 0
+  linearX = coXdiff*scaling_factor
+  linearY = coYdiff*scaling_factor
   angularZ = 0
    
   motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
