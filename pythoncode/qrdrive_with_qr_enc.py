@@ -71,7 +71,7 @@ left_back = 2
 right_back = 3
 
 def drive(coX0, coX1, coY0, coY1):
-  global motor_setpoint[left_front], motor_setpoint[right_front], motor_setpoint[left_back], motor_setpoint[right_back]
+  global motor_setpoint
   print testarray
   print testarray[2]
 
