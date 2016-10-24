@@ -71,6 +71,9 @@ Kp = 0.5
 Ki = 0.2
 Kd = 0.1
 
+LFintegral = 0
+LFprev_error = 0
+
 def drive(coX0, coX1, coY0, coY1):
   global LFset, RFset, LBset, RBset
 
@@ -98,11 +101,12 @@ def drive(coX0, coX1, coY0, coY1):
   print "SET:   " + str(LFset) + " " + str(RFset) + " " + str(LBset) + " " + str(RBset) + "\r"
 
 def encoderfeedback():
-  global LFspeed, RFspeed, LBspeed, RBspeed
+  global LFspeed, RFspeed, LBspeed, RBspeed, LFintegral, LFprev_error
   #LFspeed = LFspeed + math.ceil(0.1*(LFset-speed_0))
   #RFspeed = RFspeed + math.ceil(0.1*(RFset-speed_1)) 
   #LBspeed = LBspeed + math.ceil(0.1*(LBset-speed_2))
   #RBspeed = RBspeed + math.ceil(0.1*(RBset-speed_3))
+
 
   LFerror = LFset-speed_0
   RFerror = RFset-speed_1
