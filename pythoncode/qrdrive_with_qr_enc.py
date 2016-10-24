@@ -67,6 +67,10 @@ RFset = 0
 LBset = 0
 RBset = 0
 
+Kp = 0.5
+Ki = 0.2
+Kd = 0.1
+
 def drive(coX0, coX1, coY0, coY1):
   global LFset, RFset, LBset, RBset
 
@@ -95,10 +99,25 @@ def drive(coX0, coX1, coY0, coY1):
 
 def encoderfeedback():
   global LFspeed, RFspeed, LBspeed, RBspeed
-  LFspeed = LFspeed + math.ceil(0.1*(LFset-speed_0))
-  RFspeed = RFspeed + math.ceil(0.1*(RFset-speed_1)) 
-  LBspeed = LBspeed + math.ceil(0.1*(LBset-speed_2))
-  RBspeed = RBspeed + math.ceil(0.1*(RBset-speed_3))
+  #LFspeed = LFspeed + math.ceil(0.1*(LFset-speed_0))
+  #RFspeed = RFspeed + math.ceil(0.1*(RFset-speed_1)) 
+  #LBspeed = LBspeed + math.ceil(0.1*(LBset-speed_2))
+  #RBspeed = RBspeed + math.ceil(0.1*(RBset-speed_3))
+
+  LFerror = LFset-speed_0
+  RFerror = RFset-speed_1
+  LBerror = LBset-speed_2
+  RBerror = RBset-speed_3
+
+  LFintegral = LFintegral + LFerror
+
+  if((LFerror == 0)||(LFset != LFset)):
+    LFintegral = 0
+
+  LFderivative = LFerror - LFprev_error
+  LFprev_error = LFerror
+
+  LFspeed = Kp*LFerror + Ki*LFintegral + Kd*LFderivative
 
   if(LFspeed>254):
     LFspeed = 254
@@ -117,7 +136,6 @@ def encoderfeedback():
     LBspeed = -254
   if(RBspeed<-254):
     RBspeed = -254
-
 
   print "PWM:   " + str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
   return str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
