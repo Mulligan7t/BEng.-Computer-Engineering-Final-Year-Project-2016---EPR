@@ -111,8 +111,6 @@ def encoderfeedback():
   #RBspeed = RBspeed + math.ceil(0.1*(RBset-speed_3))
 
   #if the wheel is not turning i.e. (measured) speed_0 = 0.0, then set to min_interia
-  if(speed_0=0 and LFset > 0):
-    LFspeed = min_interia
 
   LFerror = LFset-speed_0
   RFerror = RFset-speed_1
@@ -128,6 +126,10 @@ def encoderfeedback():
   LFprev_error = LFerror
 
   LFspeed = Kp*LFerror + Ki*LFintegral + Kd*LFderivative
+
+  if(speed_0==0 and LFset > 0):
+    LFspeed = min_interia
+    print "LFspeed set to min_interia-----------------"
 
   if(LFspeed>254):
     LFspeed = 254
