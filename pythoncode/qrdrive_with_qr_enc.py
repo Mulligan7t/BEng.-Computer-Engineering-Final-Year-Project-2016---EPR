@@ -115,8 +115,6 @@ def encoderfeedback():
     #print "encoder_reading[x_wheel]: " + str(encoder_reading[x_wheel]),
     #print "  integral_error[x_wheel]: " + str(integral_error[x_wheel]),
     #print "  derivative_error[x_wheel]: " + str(derivative_error[x_wheel])
-  
-  print "PWMoutput "
       
   for x_wheel in xrange(4):  
     if(encoder_reading[x_wheel]==0 and math.fabs(motor_setpoint[x_wheel]) > 0):
@@ -138,7 +136,6 @@ def encoderfeedback():
     if(math.fabs(PWMoutput[x_wheel])>254):
       PWMoutput[x_wheel] = math.copysign(254, motor_setpoint[x_wheel]) # return value of 254 with the sign of motor_setpoint[x_wheel]
   
-  print " set to min_interia-----------------"
 
 
   #PWMoutput[left_front] = PWMoutput[right_front] = PWMoutput[left_back] = PWMoutput[right_back] = 254
