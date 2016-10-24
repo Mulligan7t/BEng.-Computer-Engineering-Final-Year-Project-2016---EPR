@@ -24,10 +24,14 @@ Enc_2_B = 3               # Encoder input B: input GPIO 3
 Enc_3_A = 14              # Encoder input A: input GPIO 14 
 Enc_3_B = 15              # Encoder input B: input GPIO 15
 
+#array names
+left_front = 0
+right_front = 1
+left_back = 2
+right_back = 3
 
-
-rotary_counters = [0,0,0,0]
 lock_rotary = [threading.Lock(),threading.Lock(),threading.Lock(),threading.Lock()]     # create lock for rotary switch
+rotary_counters = [0,0,0,0]
 
 current_A = [0,0,0,0]
 current_B = [0,0,0,0]
@@ -38,12 +42,11 @@ WHEEL_SEPARATION_LENGTH = 90
 linearX = -2000                       #Forward (+ to the front)
 linearY = 000                      #Sideways (+ to the left)
 angularZ = 0 
+
 speedcalib = 2.55
 
 PWMoutput = [0,0,0,0]
-
 motor_setpoint = [0,0,0,0]
-
 encoder_reading = [0,0,0,0]
 
 Kp = 0.5
@@ -57,11 +60,6 @@ min_interia = 254 #minimum PWM to break intertia and start turning
 min_dynamic = 150 #lower than this and will stall even after rotation has begun
 
 
-#array names
-left_front = 0
-right_front = 1
-left_back = 2
-right_back = 3
 
 def drive(coX0, coX1, coY0, coY1):
   global motor_setpoint
@@ -340,6 +338,7 @@ def rotary_interrupt_3(A_or_B):
 def main():
   
   #  camqr()
+
   #  Address=("127.0.0.1",5000)
   #  s = socket.socket()
   #  try:
@@ -399,8 +398,8 @@ def main():
   route  = (A,0),(A,1),(B,1),(C,1),(C,2),(C,3)
   routelen = 5
 
-  print route[0][0]
-  print route[1]
+  print route
+  print 
 
 
 
