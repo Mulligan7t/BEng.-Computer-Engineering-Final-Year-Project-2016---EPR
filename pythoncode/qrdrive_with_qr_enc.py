@@ -52,9 +52,9 @@ LockRotary_3 = threading.Lock()     # create lock for rotary switch
 WHEEL_RADIUS=30
 WHEEL_SEPARATION_WIDTH = 93
 WHEEL_SEPARATION_LENGTH = 90
-linearX = 000                       #Forward (+ to the front)
+linearX = 2000                       #Forward (+ to the front)
 linearY = 000                      #Sideways (+ to the left)
-angularZ = 30
+angularZ = 0 
 speedcalib = 2.55
 
 LFspeed = 0
@@ -91,7 +91,7 @@ def drive(coX0, coX1, coY0, coY1):
 
 
 
-  #print "SET:   " + str(LFset) + " " + str(RFset) + " " + str(LBset) + " " + str(RBset) + "\r"
+  print "SET:   " + str(LFset) + " " + str(RFset) + " " + str(LBset) + " " + str(RBset) + "\r"
 
 def encoderfeedback():
   global LFspeed, RFspeed, LBspeed, RBspeed
@@ -400,8 +400,8 @@ def main():
   while True:
     try:
       line = ser.readline()
-      print "line: ",
-      print line,
+      #print "line: ",
+      #print line,
       
       data = [float(val) for val in line.split()]
       # print data
