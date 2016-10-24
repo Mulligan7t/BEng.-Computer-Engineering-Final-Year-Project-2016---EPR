@@ -69,15 +69,20 @@ def drive(coY0, coY1, coX0, coX1):
   print coXdiff
   print coYdiff
 
-  linearX = coXdiff*scaling_factor
-  linearY = coYdiff*scaling_factor
-  angularZ = 0
+#  linearX = coXdiff*scaling_factor
+#  linearY = coYdiff*scaling_factor
+#  angularZ = 0
   
   print "atan2"
   heading = 90.0 - math.degrees(math.atan2(coYdiff,coXdiff))
   if(heading < 0):
     heading = heading + 360
   print heading
+
+  linearX = 0
+  linearY = 0
+  angularZ = math.radians(heading)
+
   motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
   motor_setpoint[right_front] = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
   motor_setpoint[left_back] = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
