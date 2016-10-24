@@ -154,7 +154,7 @@ def encoderfeedback():
   if(math.fabs(RBspeed)>254):
     RBspeed = math.copysign(254, RBset) # return value of 254 with the sign of RBset
 
-  LFspeed, RFspeed, LBspeed, RBspeed = 254
+
   print "speed_0:  " + str(speed_0)
   print "PWM:   " + str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
   return str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
@@ -252,7 +252,7 @@ def init():
 # Rotarty encoder interrupt:
 # this one is called for both inputs from rotary switch (A and B)
 def rotary_interrupt_0(A_or_B):
-   global rotary_counters, Current_0_A, Current_0_B, LockRotary_0
+   global rotary_counters[0], Current_0_A, Current_0_B, LockRotary_0
                                        # read both of the switches
    Switch_A = GPIO.input(Enc_0_A)
    Switch_B = GPIO.input(Enc_0_B)
@@ -277,7 +277,7 @@ def rotary_interrupt_0(A_or_B):
 # Rotarty encoder interrupt:
 # this one is called for both inputs from rotary switch (A and B)
 def rotary_interrupt_1(A_or_B):
-   global rotary_counters, Current_1_A, Current_1_B, LockRotary_1
+   global rotary_counters[1], Current_1_A, Current_1_B, LockRotary_1
                                        # read both of the switches
    Switch_A = GPIO.input(Enc_1_A)
    Switch_B = GPIO.input(Enc_1_B)
@@ -302,7 +302,7 @@ def rotary_interrupt_1(A_or_B):
 # Rotarty encoder interrupt:
 # this one is called for both inputs from rotary switch (A and B)
 def rotary_interrupt_2(A_or_B):
-   global rotary_counters, Current_2_A, Current_2_B, LockRotary_2
+   global rotary_counters[2], Current_2_A, Current_2_B, LockRotary_2
                                        # read both of the switches
    Switch_A = GPIO.input(Enc_2_A)
    Switch_B = GPIO.input(Enc_2_B)
@@ -327,7 +327,7 @@ def rotary_interrupt_2(A_or_B):
 # Rotarty encoder interrupt:
 # this one is called for both inputs from rotary switch (A and B)
 def rotary_interrupt_3(A_or_B):
-   global rotary_counters, Current_3_A, Current_3_B, LockRotary_3
+   global rotary_counters[3], Current_3_A, Current_3_B, LockRotary_3
                                        # read both of the switches
    Switch_A = GPIO.input(Enc_3_A)
    Switch_B = GPIO.input(Enc_3_B)
@@ -362,7 +362,7 @@ def main():
 
   print "The server is not running"
   
-  global rotary_counters, LockRotary_0,  LockRotary_1, LockRotary_2, LockRotary_3, speed_0, speed_1, speed_2, speed_3
+  global rotary_counters[0], LockRotary_0, rotary_counters[1], LockRotary_1,rotary_counters[2], LockRotary_2, rotary_counters[3], LockRotary_3, speed_0, speed_1, speed_2, speed_3
 
   TotalCount_0 = 0                            # Current TotalCount_0   
   NewCounter_0 = 0                            # for faster reading with locks           
