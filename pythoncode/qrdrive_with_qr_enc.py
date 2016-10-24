@@ -51,10 +51,8 @@ linearY = 000                      #Sideways (+ to the left)
 angularZ = 0 
 speedcalib = 2.55
 
-LFspeed = 0
-RFspeed = 0
-LBspeed = 0
-RBspeed = 0
+PWMoutput = [0,0,0,0]
+
 
 LFset = 0
 RFset = 0
@@ -104,11 +102,11 @@ def drive(coX0, coX1, coY0, coY1):
   print "SET:   " + str(LFset) + " " + str(RFset) + " " + str(LBset) + " " + str(RBset) + "\r"
 
 def encoderfeedback():
-  global LFspeed, RFspeed, LBspeed, RBspeed, LFintegral, LFprev_error
-  #LFspeed = LFspeed + math.ceil(0.1*(LFset-speed_0))
-  #RFspeed = RFspeed + math.ceil(0.1*(RFset-speed_1)) 
-  #LBspeed = LBspeed + math.ceil(0.1*(LBset-speed_2))
-  #RBspeed = RBspeed + math.ceil(0.1*(RBset-speed_3))
+  global PWMoutput, LFintegral, LFprev_error
+  #PWMoutput[0] = PWMoutput[0] + math.ceil(0.1*(LFset-speed_0))
+  #PWMoutput[1] = PWMoutput[1] + math.ceil(0.1*(RFset-speed_1)) 
+  #PWMoutput[2] = PWMoutput[2] + math.ceil(0.1*(LBset-speed_2))
+  #PWMoutput[3] = PWMoutput[3] + math.ceil(0.1*(RBset-speed_3))
 
   #if the wheel is not turning i.e. (measured) speed_0 = 0.0, then set to min_interia
 
@@ -125,31 +123,31 @@ def encoderfeedback():
   LFderivative = LFerror - LFprev_error
   LFprev_error = LFerror
 
-  LFspeed = LFspeed + (Kp*LFerror + Ki*LFintegral + Kd*LFderivative)
+  PWMoutput[0] = PWMoutput[0] + (Kp*LFerror + Ki*LFintegral + Kd*LFderivative)
   print "LFerror: " + str(LFerror),
   print "  LFintegral: " + str(LFintegral),
   print "  LFderv: " + str(LFderivative)
   if(speed_0==0 and math.fabs(LFset) > 0):
-    LFspeed = math.copysign(min_interia, LFset) # return value of min_interia with the sign of LFset
-    print "LFspeed set to min_interia-----------------"
+    PWMoutput[0] = math.copysign(min_interia, LFset) # return value of min_interia with the sign of LFset
+    print "PWMoutput[0] set to min_interia-----------------"
 
-  if(math.fabs(LFset) > 0 and math.fabs(speed_0)>1.0 and math.fabs(LFspeed) <min_dynamic):
-    LFspeed = math.copysign(min_dynamic, LFset) # return value of min_dynamic with the sign of LFset
+  if(math.fabs(LFset) > 0 and math.fabs(speed_0)>1.0 and math.fabs(PWMoutput[0]) <min_dynamic):
+    PWMoutput[0] = math.copysign(min_dynamic, LFset) # return value of min_dynamic with the sign of LFset
 
   
-  if(math.fabs(LFspeed)>254):
-    LFspeed = math.copysign(254, LFset) # return value of 254 with the sign of LFset
-  if(math.fabs(RFspeed)>254):
-    RFspeed = math.copysign(254, RFset) # return value of 254 with the sign of RFset
-  if(math.fabs(LBspeed)>254):
-    LBspeed = math.copysign(254, LBset) # return value of 254 with the sign of LBset
-  if(math.fabs(RBspeed)>254):
-    RBspeed = math.copysign(254, RBset) # return value of 254 with the sign of RBset
+  if(math.fabs(PWMoutput[0])>254):
+    PWMoutput[0] = math.copysign(254, LFset) # return value of 254 with the sign of LFset
+  if(math.fabs(PWMoutput[1])>254):
+    PWMoutput[1] = math.copysign(254, RFset) # return value of 254 with the sign of RFset
+  if(math.fabs(PWMoutput[2])>254):
+    PWMoutput[2] = math.copysign(254, LBset) # return value of 254 with the sign of LBset
+  if(math.fabs(PWMoutput[3])>254):
+    PWMoutput[3] = math.copysign(254, RBset) # return value of 254 with the sign of RBset
 
-  LFspeed = RFspeed = LBspeed = RBspeed = 254
+  PWMoutput[0] = PWMoutput[1] = PWMoutput[2] = PWMoutput[3] = 254
   print "speed_0:  " + str(speed_0)
-  print "PWM:   " + str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
-  return str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
+  print "PWM:   " + str(int(PWMoutput[0])) + " " + str(int(PWMoutput[1])) + " " + str(int(PWMoutput[2])) + " " + str(int(PWMoutput[3])) + "\r"
+  return str(int(PWMoutput[0])) + " " + str(int(PWMoutput[1])) + " " + str(int(PWMoutput[2])) + " " + str(int(PWMoutput[3])) + "\r"
 
 def camqr():
   if len(argv) < 2: exit(1)
