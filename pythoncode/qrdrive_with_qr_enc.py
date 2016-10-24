@@ -64,8 +64,8 @@ scaling_factor = 1000
 def drive(coY0, coY1, coX0, coX1):
   global motor_setpoint
 
-  coXdiff = coX0-coX1
-  coYdiff = coY0-coY1
+  coXdiff = coX1-coX0
+  coYdiff = coY1-coY0
   print coXdiff
   print coYdiff
 
