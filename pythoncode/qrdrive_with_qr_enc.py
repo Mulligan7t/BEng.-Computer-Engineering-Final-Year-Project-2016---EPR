@@ -57,8 +57,6 @@ motor_setpoint = [0,0,0,0]
 
 encoder_reading = [0,0,0,0]
 
-encoder_reading[left_front]
-
 Kp = 0.5
 Ki = 0.2
 Kd = 0.1
