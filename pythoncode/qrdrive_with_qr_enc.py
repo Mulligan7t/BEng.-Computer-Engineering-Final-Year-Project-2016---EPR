@@ -125,7 +125,7 @@ def encoderfeedback():
   LFderivative = LFerror - LFprev_error
   LFprev_error = LFerror
 
-  LFspeed = Kp*LFerror + Ki*LFintegral + Kd*LFderivative
+  LFspeed = LFspeed + (Kp*LFerror + Ki*LFintegral + Kd*LFderivative)
 
   if(speed_0==0 and LFset > 0):
     LFspeed = min_interia
@@ -149,6 +149,7 @@ def encoderfeedback():
   if(RBspeed<-254):
     RBspeed = -254
 
+  print "speed_0:  " + str(speed_0)
   print "PWM:   " + str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
   return str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
 
