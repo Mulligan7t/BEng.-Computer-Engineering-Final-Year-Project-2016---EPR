@@ -465,51 +465,20 @@ def main():
                                   # because of threading make sure no thread
                                   # changes value until we get them
                                   # and reset them
-                                  
-    lock_rotary[left_front].acquire()               # get lock for rotary switch
-    new_counter[0] = rotary_counters[left_front]      # get counter value
-    rotary_counters[left_front] = 0                 # RESET IT TO 0
-    lock_rotary[left_front].release()               # and release lock
-             
-    if (new_counter[0] !=0):               # Counter has CHANGED
-       total_count[0] = total_count[0] + new_counter[0]
-
-    lock_rotary[right_front].acquire()               # get lock for rotary switch
-    new_counter[1] = rotary_counters[right_front]      # get counter value
-    rotary_counters[right_front] = 0                 # RESET IT TO 0
-    lock_rotary[right_front].release()               # and release lock
-             
-    if (new_counter[1] !=0):               # Counter has CHANGED
-       total_count[1] = total_count[1] + new_counter[1]
-
-    lock_rotary[left_back].acquire()               # get lock for rotary switch
-    new_counter[2] = rotary_counters[left_back]      # get counter value
-    rotary_counters[left_back] = 0                 # RESET IT TO 0
-    lock_rotary[left_back].release()               # and release lock
-             
-    if (new_counter[2] !=0):               # Counter has CHANGED
-       total_count[2] = total_count[2] + new_counter[2]
-
-    lock_rotary[right_back].acquire()               # get lock for rotary switch
-    new_counter[3] = rotary_counters[right_back]      # get counter value
-    rotary_counters[right_back] = 0                 # RESET IT TO 0
-    lock_rotary[right_back].release()               # and release lock
-             
-    if (new_counter[3] !=0):               # Counter has CHANGED
-       total_count[3] = total_count[3] + new_counter[3]
-
-                               
+    for x_wheel in xrange(4):                              
+      lock_rotary[x_wheel].acquire()               # get lock for rotary switch
+      new_counter[x_wheel] = rotary_counters[x_wheel]      # get counter value
+      rotary_counters[x_wheel] = 0                 # RESET IT TO 0
+      lock_rotary[x_wheel].release()               # and release lock
+               
+      if (new_counter[x_wheel] !=0):               # Counter has CHANGED
+         total_count[x_wheel] = total_count[x_wheel] + new_counter[x_wheel]
+                                        
     if (cntSpeed > 10):
-      encoder_reading[left_front] = (total_count[0]/cntSpeed)
-      encoder_reading[right_front] = (total_count[1]/cntSpeed)
-      encoder_reading[left_back] = (total_count[2]/cntSpeed)
-      encoder_reading[right_back] = (total_count[3]/cntSpeed)
+      for x_wheel in xrange(4):
+        encoder_reading[x_wheel] = (total_count[x_wheel]/cntSpeed)
       print "enc_read: " + str(int(encoder_reading[left_front]*100)) + "  " + str(int(encoder_reading[right_front]*100)) + "  " + str(int(encoder_reading[left_back]*100)) + "  " + str(int(encoder_reading[right_back]*100))
-      cntSpeed = 0
-      total_count[0] = 0
-      total_count[1] = 0
-      total_count[2] = 0
-      total_count[3] = 0
+      cntSpeed = 0 = total_count[0] = total_count[1] = total_count[2] = total_count[3] = 0
 
       
 
