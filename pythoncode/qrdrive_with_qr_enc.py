@@ -154,7 +154,7 @@ def encoderfeedback():
   if(math.fabs(RBspeed)>254):
     RBspeed = math.copysign(254, RBset) # return value of 254 with the sign of RBset
 
-  LFspeed, RFspeed, LBspeed, RBspeed = 254
+  LFspeed = RFspeed = LBspeed = RBspeed = 254
   print "speed_0:  " + str(speed_0)
   print "PWM:   " + str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
   return str(int(LFspeed)) + " " + str(int(RFspeed)) + " " + str(int(LBspeed)) + " " + str(int(RBspeed)) + "\r"
