@@ -74,6 +74,9 @@ Kd = 0.1
 LFintegral = 0
 LFprev_error = 0
 
+min_interia = 200 #minimum PWM to break intertia and start turning
+min_dynamic = 150 #lower than this and will stall even after rotation has begun
+
 def drive(coX0, coX1, coY0, coY1):
   global LFset, RFset, LBset, RBset
 
@@ -107,6 +110,9 @@ def encoderfeedback():
   #LBspeed = LBspeed + math.ceil(0.1*(LBset-speed_2))
   #RBspeed = RBspeed + math.ceil(0.1*(RBset-speed_3))
 
+  #if the wheel is not turning i.e. (measured) speed_0 = 0.0, then set to min_interia
+  if(speed_0=0 and LFset > 0):
+    LFspeed = min_interia
 
   LFerror = LFset-speed_0
   RFerror = RFset-speed_1
