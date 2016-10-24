@@ -29,19 +29,8 @@ Enc_3_B = 15              # Encoder input B: input GPIO 15
 rotary_counters = [0,0,0,0]
 lock_rotary = [threading.Lock(),threading.Lock(),threading.Lock(),threading.Lock()]     # create lock for rotary switch
 
-
-Current_0_A = 1                     # Assume that rotary switch is not 
-Current_0_B = 1                     # moving while we init software
-
-Current_1_A = 1                     # Assume that rotary switch is not 
-Current_1_B = 1                     # moving while we init software
-   
-Current_2_A = 1                     # Assume that rotary switch is not 
-Current_2_B = 1                     # moving while we init software
-
-Current_3_A = 1                     # Assume that rotary switch is not 
-Current_3_B = 1                     # moving while we init software
-
+current_A = [0,0,0,0]
+current_B = [0,0,0,0]
 
 WHEEL_RADIUS=30
 WHEEL_SEPARATION_WIDTH = 93
@@ -137,7 +126,6 @@ def encoderfeedback():
       print "  ",
       print x_wheel,
       print "  ",
-  
 
     if(math.fabs(motor_setpoint[x_wheel]) > 0 and math.fabs(encoder_reading[x_wheel])>1.0 and math.fabs(PWMoutput[x_wheel]) <min_dynamic):
       #motor set to run forward or backward
@@ -252,17 +240,17 @@ def init():
 # Rotarty encoder interrupt:
 # this one is called for both inputs from rotary switch (A and B)
 def rotary_interrupt_0(A_or_B):
-   global rotary_counters, Current_0_A, Current_0_B, lock_rotary
+   global rotary_counters, current_A, current_B, lock_rotary
                                        # read both of the switches
    Switch_A = GPIO.input(Enc_0_A)
    Switch_B = GPIO.input(Enc_0_B)
                                        # now check if state of A or B has changed
                                        # if not that means that bouncing caused it
-   if Current_0_A == Switch_A and Current_0_B == Switch_B:      # Same interrupt as before (Bouncing)?
+   if current_A[left_front] == Switch_A and current_B[left_front] == Switch_B:      # Same interrupt as before (Bouncing)?
       return                                                    # ignore interrupt!
 
-   Current_0_A = Switch_A                        # remember new state
-   Current_0_B = Switch_B                        # for next bouncing check
+   current_A[left_front] = Switch_A                        # remember new state
+   current_B[left_front] = Switch_B                        # for next bouncing check
 
 
    if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
@@ -277,17 +265,17 @@ def rotary_interrupt_0(A_or_B):
 # Rotarty encoder interrupt:
 # this one is called for both inputs from rotary switch (A and B)
 def rotary_interrupt_1(A_or_B):
-   global rotary_counters, Current_1_A, Current_1_B, lock_rotary
+   global rotary_counters, current_A, current_B, lock_rotary
                                        # read both of the switches
    Switch_A = GPIO.input(Enc_1_A)
    Switch_B = GPIO.input(Enc_1_B)
                                        # now check if state of A or B has changed
                                        # if not that means that bouncing caused it
-   if Current_1_A == Switch_A and Current_1_B == Switch_B:      # Same interrupt as before (Bouncing)?
+   if current_A[right_front] == Switch_A and current_B[right_front] == Switch_B:      # Same interrupt as before (Bouncing)?
       return                                                    # ignore interrupt!
 
-   Current_1_A = Switch_A                        # remember new state
-   Current_1_B = Switch_B                        # for next bouncing check
+   current_A[right_front] = Switch_A                        # remember new state
+   current_B[right_front] = Switch_B                        # for next bouncing check
 
 
    if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
@@ -302,17 +290,17 @@ def rotary_interrupt_1(A_or_B):
 # Rotarty encoder interrupt:
 # this one is called for both inputs from rotary switch (A and B)
 def rotary_interrupt_2(A_or_B):
-   global rotary_counters, Current_2_A, Current_2_B, lock_rotary
+   global rotary_counters, current_A, current_B, lock_rotary
                                        # read both of the switches
    Switch_A = GPIO.input(Enc_2_A)
    Switch_B = GPIO.input(Enc_2_B)
                                        # now check if state of A or B has changed
                                        # if not that means that bouncing caused it
-   if Current_2_A == Switch_A and Current_2_B == Switch_B:      # Same interrupt as before (Bouncing)?
+   if current_A[left_back] == Switch_A and current_B[left_back] == Switch_B:      # Same interrupt as before (Bouncing)?
       return                                                    # ignore interrupt!
 
-   Current_2_A = Switch_A                        # remember new state
-   Current_2_B = Switch_B                        # for next bouncing check
+   current_A[left_back] = Switch_A                        # remember new state
+   current_B[left_back] = Switch_B                        # for next bouncing check
 
 
    if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
@@ -327,17 +315,17 @@ def rotary_interrupt_2(A_or_B):
 # Rotarty encoder interrupt:
 # this one is called for both inputs from rotary switch (A and B)
 def rotary_interrupt_3(A_or_B):
-   global rotary_counters, Current_3_A, Current_3_B, lock_rotary
+   global rotary_counters, current_A, current_B, lock_rotary
                                        # read both of the switches
    Switch_A = GPIO.input(Enc_3_A)
    Switch_B = GPIO.input(Enc_3_B)
                                        # now check if state of A or B has changed
                                        # if not that means that bouncing caused it
-   if Current_3_A == Switch_A and Current_3_B == Switch_B:      # Same interrupt as before (Bouncing)?
+   if current_A[right_back] == Switch_A and current_B[right_back] == Switch_B:      # Same interrupt as before (Bouncing)?
       return                                                    # ignore interrupt!
 
-   Current_3_A = Switch_A                        # remember new state
-   Current_3_B = Switch_B                        # for next bouncing check
+   current_A[right_back] = Switch_A                        # remember new state
+   current_B[right_back] = Switch_B                        # for next bouncing check
 
 
    if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
