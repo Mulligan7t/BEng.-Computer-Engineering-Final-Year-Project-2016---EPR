@@ -513,7 +513,7 @@ def main():
       encoder_reading[right_front] = (TotalCount_1/cntSpeed)
       encoder_reading[left_back] = (TotalCount_2/cntSpeed)
       encoder_reading[right_back] = (TotalCount_3/cntSpeed)
-      print encoder_reading[left_front], encoder_reading[right_front], encoder_reading[left_back], encoder_reading[right_back]
+      print "enc_read: %.2f" encoder_reading[left_front] + "  %.2f " + encoder_reading[right_front] + "  %.2f " + encoder_reading[left_back] + "  %.2f " + encoder_reading[right_back]
       cntSpeed = 0
       TotalCount_0 = 0
       TotalCount_1 = 0
