@@ -411,8 +411,8 @@ def main():
 
 
 
-  print('reading from serial port %s...' % strPort)
-  print('plotting data...')
+  print('reading from serial port %s...' % strPort),
+  print('            plotting data...')
 
   
   frameCnt = 0
@@ -427,10 +427,8 @@ def main():
       frameCnt = int(cnt / 10)
 
       if frameCnt < routelen:
-        #ser.write()
         drive(route[frameCnt][0],route[frameCnt+1][0], route[frameCnt][1],route[frameCnt+1][1])
         ser.write(encoderfeedback())
-        #ser.write(driveY() 
 
       
       if(len(data) == 10):
@@ -460,7 +458,7 @@ def main():
         ser.write("0 0 0 0\r")
         raise SystemExit
 
-#    sleep(0.1)                        # sleep 100 msec
+    #    sleep(0.1)                        # sleep 100 msec
     cntSpeed = cntSpeed +1
                                   # because of threading make sure no thread
                                   # changes value until we get them
@@ -480,9 +478,6 @@ def main():
       print "enc:    " + str(int(encoder_reading[left_front]*100)) + "  " + str(int(encoder_reading[right_front]*100)) + "  " + str(int(encoder_reading[left_back]*100)) + "  " + str(int(encoder_reading[right_back]*100))
       cntSpeed = total_count[0] = total_count[1] = total_count[2] = total_count[3] = 0
 
-      
-
-  
   print('exiting.')
   
 
