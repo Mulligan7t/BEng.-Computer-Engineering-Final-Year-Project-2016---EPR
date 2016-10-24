@@ -59,12 +59,14 @@ Kp = 0.5
 Ki = 0.2
 Kd = 0.1
 
-LFintegral = 0
-LFprev_error = 0
+integral_error = [0,0,0,0]
+prev_error = [0,0,0,0]
 
 min_interia = 254 #minimum PWM to break intertia and start turning
 min_dynamic = 150 #lower than this and will stall even after rotation has begun
 
+
+#array names
 left_front = 0
 right_front = 1
 left_back = 2
@@ -73,7 +75,6 @@ right_back = 3
 def drive(coX0, coX1, coY0, coY1):
   global motor_setpoint
  
-
   motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
   motor_setpoint[right_front] = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
   motor_setpoint[left_back] = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
@@ -89,17 +90,14 @@ def drive(coX0, coX1, coY0, coY1):
     motor_setpoint[right_back] = 255
 
   encoderRate = 7
-  motor_setpoint[left_front] = motor_setpoint[left_front]//encoderRate
-  motor_setpoint[right_front] = motor_setpoint[right_front]//encoderRate
-  motor_setpoint[left_back] = motor_setpoint[left_back]//encoderRate
-  motor_setpoint[right_back] = motor_setpoint[right_back]//encoderRate
 
-
+  for x_wheel in xrange(3):
+    motor_setpoint[x_wheel] = motor_setpoint[x_wheel]//encoderRate
 
   print "SET:   " + str(motor_setpoint[left_front]) + " " + str(motor_setpoint[right_front]) + " " + str(motor_setpoint[left_back]) + " " + str(motor_setpoint[right_back]) + "\r"
 
 def encoderfeedback():
-  global PWMoutput, LFintegral, LFprev_error
+  global PWMoutput, integral_error, prev_error
   #PWMoutput[left_front] = PWMoutput[left_front] + math.ceil(0.1*(motor_setpoint[left_front]-speed_0))
   #PWMoutput[right_front] = PWMoutput[right_front] + math.ceil(0.1*(motor_setpoint[right_front]-speed_1)) 
   #PWMoutput[left_back] = PWMoutput[left_back] + math.ceil(0.1*(motor_setpoint[left_back]-speed_2))
@@ -107,22 +105,24 @@ def encoderfeedback():
 
   #if the wheel is not turning i.e. (measured) speed_0 = 0.0, then set to min_interia
 
+#  for x_wheel in xrange(3):
+
   LFerror = motor_setpoint[left_front]-speed_0
   RFerror = motor_setpoint[right_front]-speed_1
   LBerror = motor_setpoint[left_back]-speed_2
   RBerror = motor_setpoint[right_back]-speed_3
 
-  LFintegral = LFintegral + LFerror
+  integral_error[left_front] = integral_error[left_front] + LFerror
 
-  if((LFerror < 0.5) or (LFintegral > 254)):
-    LFintegral = 0
+  if((LFerror < 0.5) or (integral_error[left_front] > 254)):
+    integral_error[left_front] = 0
 
-  LFderivative = LFerror - LFprev_error
-  LFprev_error = LFerror
+  LFderivative = LFerror - prev_error[left_front]
+  prev_error[left_front] = LFerror
 
-  PWMoutput[left_front] = PWMoutput[left_front] + (Kp*LFerror + Ki*LFintegral + Kd*LFderivative)
+  PWMoutput[left_front] = PWMoutput[left_front] + (Kp*LFerror + Ki*integral_error[left_front] + Kd*LFderivative)
   #print "LFerror: " + str(LFerror),
-  #print "  LFintegral: " + str(LFintegral),
+  #print "  integral_error[left_front]: " + str(integral_error[left_front]),
   #print "  LFderv: " + str(LFderivative)
   if(speed_0==0 and math.fabs(motor_setpoint[left_front]) > 0):
     PWMoutput[left_front] = math.copysign(min_interia, motor_setpoint[left_front]) # return value of min_interia with the sign of motor_setpoint[left_front]
