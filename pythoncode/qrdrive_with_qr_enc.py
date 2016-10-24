@@ -55,6 +55,10 @@ PWMoutput = [0,0,0,0]
 
 motor_setpoint = [0,0,0,0]
 
+encoder_reading = [0,0,0,0]
+
+encoder_reading[left_front]
+
 Kp = 0.5
 Ki = 0.2
 Kd = 0.1
@@ -98,19 +102,19 @@ def drive(coX0, coX1, coY0, coY1):
 
 def encoderfeedback():
   global PWMoutput, integral_error, prev_error
-  #PWMoutput[left_front] = PWMoutput[left_front] + math.ceil(0.1*(motor_setpoint[left_front]-speed_0))
-  #PWMoutput[right_front] = PWMoutput[right_front] + math.ceil(0.1*(motor_setpoint[right_front]-speed_1)) 
-  #PWMoutput[left_back] = PWMoutput[left_back] + math.ceil(0.1*(motor_setpoint[left_back]-speed_2))
-  #PWMoutput[right_back] = PWMoutput[right_back] + math.ceil(0.1*(motor_setpoint[right_back]-speed_3))
+  #PWMoutput[left_front] = PWMoutput[left_front] + math.ceil(0.1*(motor_setpoint[left_front]-encoder_reading[left_front]))
+  #PWMoutput[right_front] = PWMoutput[right_front] + math.ceil(0.1*(motor_setpoint[right_front]-encoder_reading[right_front])) 
+  #PWMoutput[left_back] = PWMoutput[left_back] + math.ceil(0.1*(motor_setpoint[left_back]-encoder_reading[left_back]))
+  #PWMoutput[right_back] = PWMoutput[right_back] + math.ceil(0.1*(motor_setpoint[right_back]-encoder_reading[right_back]))
 
-  #if the wheel is not turning i.e. (measured) speed_0 = 0.0, then set to min_interia
+  #if the wheel is not turning i.e. (measured) encoder_reading[left_front] = 0.0, then set to min_interia
 
 #  for x_wheel in xrange(3):
 
-  LFerror = motor_setpoint[left_front]-speed_0
-  RFerror = motor_setpoint[right_front]-speed_1
-  LBerror = motor_setpoint[left_back]-speed_2
-  RBerror = motor_setpoint[right_back]-speed_3
+  LFerror = motor_setpoint[left_front]-encoder_reading[left_front]
+  RFerror = motor_setpoint[right_front]-encoder_reading[right_front]
+  LBerror = motor_setpoint[left_back]-encoder_reading[left_back]
+  RBerror = motor_setpoint[right_back]-encoder_reading[right_back]
 
   integral_error[left_front] = integral_error[left_front] + LFerror
 
@@ -124,11 +128,11 @@ def encoderfeedback():
   #print "LFerror: " + str(LFerror),
   #print "  integral_error[left_front]: " + str(integral_error[left_front]),
   #print "  LFderv: " + str(LFderivative)
-  if(speed_0==0 and math.fabs(motor_setpoint[left_front]) > 0):
+  if(encoder_reading[left_front]==0 and math.fabs(motor_setpoint[left_front]) > 0):
     PWMoutput[left_front] = math.copysign(min_interia, motor_setpoint[left_front]) # return value of min_interia with the sign of motor_setpoint[left_front]
     #print "PWMoutput[left_front] set to min_interia-----------------"
 
-  if(math.fabs(motor_setpoint[left_front]) > 0 and math.fabs(speed_0)>1.0 and math.fabs(PWMoutput[left_front]) <min_dynamic):
+  if(math.fabs(motor_setpoint[left_front]) > 0 and math.fabs(encoder_reading[left_front])>1.0 and math.fabs(PWMoutput[left_front]) <min_dynamic):
     PWMoutput[left_front] = math.copysign(min_dynamic, motor_setpoint[left_front]) # return value of min_dynamic with the sign of motor_setpoint[left_front]
 
   
@@ -142,7 +146,7 @@ def encoderfeedback():
     PWMoutput[right_back] = math.copysign(254, motor_setpoint[right_back]) # return value of 254 with the sign of motor_setpoint[right_back]
 
   PWMoutput[left_front] = PWMoutput[right_front] = PWMoutput[left_back] = PWMoutput[right_back] = 254
-  #print "speed_0:  " + str(speed_0)
+  #print "encoder_reading[left_front]:  " + str(encoder_reading[left_front])
   
   print "PWM:   " + str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
   return str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
@@ -350,20 +354,20 @@ def main():
 
   print "The server is not running"
   
-  global rotary_counters, lock_rotary, speed_0, speed_1, speed_2, speed_3
+  global rotary_counters, lock_rotary, encoder_reading
 
   TotalCount_0 = 0                            # Current TotalCount_0   
   NewCounter_0 = 0                            # for faster reading with locks           
-  speed_0 = 0
+  encoder_reading[left_front] = 0
   TotalCount_1 = 0                            # Current TotalCount_1   
   NewCounter_1 = 0                            # for faster reading with locks           
-  speed_1 = 0
+  encoder_reading[right_front] = 0
   TotalCount_2 = 05                           # Current TotalCount_2   
   NewCounter_2 = 0                            # for faster reading with locks           
-  speed_2 = 0
+  encoder_reading[left_back] = 0
   TotalCount_3 = 0                            # Current TotalCount_3   
   NewCounter_3 = 0                            # for faster reading with locks           
-  speed_3 = 0
+  encoder_reading[right_back] = 0
   cntSpeed = 0 
 
   init()                              # Init interrupts, GPIO, ...
@@ -504,11 +508,11 @@ def main():
 
                                
     if (cntSpeed > 10):
-      speed_0 = (TotalCount_0/cntSpeed)
-      speed_1 = (TotalCount_1/cntSpeed)
-      speed_2 = (TotalCount_2/cntSpeed)
-      speed_3 = (TotalCount_3/cntSpeed)
-      print speed_0, speed_1, speed_2, speed_3
+      encoder_reading[left_front] = (TotalCount_0/cntSpeed)
+      encoder_reading[right_front] = (TotalCount_1/cntSpeed)
+      encoder_reading[left_back] = (TotalCount_2/cntSpeed)
+      encoder_reading[right_back] = (TotalCount_3/cntSpeed)
+      print encoder_reading[left_front], encoder_reading[right_front], encoder_reading[left_back], encoder_reading[right_back]
       cntSpeed = 0
       TotalCount_0 = 0
       TotalCount_1 = 0
