@@ -52,7 +52,7 @@ LockRotary_3 = threading.Lock()     # create lock for rotary switch
 WHEEL_RADIUS=30
 WHEEL_SEPARATION_WIDTH = 93
 WHEEL_SEPARATION_LENGTH = 90
-linearX = 2000                       #Forward (+ to the front)
+linearX = -2000                       #Forward (+ to the front)
 linearY = 000                      #Sideways (+ to the left)
 angularZ = 0 
 speedcalib = 2.55
@@ -74,7 +74,7 @@ Kd = 0.1
 LFintegral = 0
 LFprev_error = 0
 
-min_interia = 200 #minimum PWM to break intertia and start turning
+min_interia = 254 #minimum PWM to break intertia and start turning
 min_dynamic = 150 #lower than this and will stall even after rotation has begun
 
 def drive(coX0, coX1, coY0, coY1):
@@ -119,18 +119,26 @@ def encoderfeedback():
 
   LFintegral = LFintegral + LFerror
 
-  if((LFerror == 0) or (LFset != LFset)):
+  if((LFerror < 0.5) or (LFintegral > 254)):
     LFintegral = 0
 
   LFderivative = LFerror - LFprev_error
   LFprev_error = LFerror
 
   LFspeed = LFspeed + (Kp*LFerror + Ki*LFintegral + Kd*LFderivative)
-
+  print "LFerror: " + str(LFerror),
+  print "  LFintegral: " + str(LFintegral),
+  print "  LFderv: " + str(LFderivative)
   if(speed_0==0 and LFset > 0):
     LFspeed = min_interia
     print "LFspeed set to min_interia-----------------"
 
+  if(LFset >0 and speed_0>1.0 and LFspeed <min_dynamic):
+    LFspeed = min_dynamic
+
+  if(LFset <0 and speed_0<-1.0 and LFspeed > -min_dynamic):
+    LFspeed = -min_dynamic
+  
   if(LFspeed>254):
     LFspeed = 254
   if(RFspeed>254):
