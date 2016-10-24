@@ -447,6 +447,8 @@ def main():
       
       if(len(data) == 10):
         magnetic_heading = data[8]
+        print "MAG"
+        print magnetic_heading
         dt = data[9]
         accXcurr = data[0]- calib
         totvelX += accXcurr*dt
