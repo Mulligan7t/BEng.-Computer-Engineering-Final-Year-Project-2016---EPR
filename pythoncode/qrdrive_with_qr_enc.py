@@ -77,8 +77,13 @@ LFprev_error = 0
 min_interia = 254 #minimum PWM to break intertia and start turning
 min_dynamic = 150 #lower than this and will stall even after rotation has begun
 
+
+testarray = [0,1,2,3]
+
 def drive(coX0, coX1, coY0, coY1):
   global LFset, RFset, LBset, RBset
+  print testarray
+  print testarray[2]
 
   LFset = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
   RFset = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
