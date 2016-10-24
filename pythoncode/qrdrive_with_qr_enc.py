@@ -129,15 +129,13 @@ def encoderfeedback():
   print "LFerror: " + str(LFerror),
   print "  LFintegral: " + str(LFintegral),
   print "  LFderv: " + str(LFderivative)
-  if(speed_0==0 and LFset > 0):
-    LFspeed = min_interia
+  if(speed_0==0 and math.fabs(LFset) > 0):
+    LFspeed = math.copysign(min_interia, LFset) # return value of min_interia with the sign of LFset
     print "LFspeed set to min_interia-----------------"
 
-  if(LFset >0 and speed_0>1.0 and LFspeed <min_dynamic):
-    LFspeed = min_dynamic
+  if(math.fabs(LFset) > 0 and math.fabs(speed_0)>1.0 and math.fabs(LFspeed) <min_dynamic):
+    LFspeed = math.copysign(min_dynamic, LFset) # return value of min_dynamic with the sign of LFset
 
-  if(LFset <0 and speed_0<-1.0 and LFspeed > -min_dynamic):
-    LFspeed = -min_dynamic
   
   if(LFspeed>254):
     LFspeed = 254
