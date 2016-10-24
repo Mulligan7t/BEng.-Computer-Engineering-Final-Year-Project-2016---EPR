@@ -473,12 +473,12 @@ def main():
                
       if (new_counter[x_wheel] !=0):               # Counter has CHANGED
          total_count[x_wheel] = total_count[x_wheel] + new_counter[x_wheel]
-                                        
+
     if (cntSpeed > 10):
       for x_wheel in xrange(4):
         encoder_reading[x_wheel] = (total_count[x_wheel]/cntSpeed)
-      print "enc_read: " + str(int(encoder_reading[left_front]*100)) + "  " + str(int(encoder_reading[right_front]*100)) + "  " + str(int(encoder_reading[left_back]*100)) + "  " + str(int(encoder_reading[right_back]*100))
-      cntSpeed = 0 = total_count[0] = total_count[1] = total_count[2] = total_count[3] = 0
+      print "enc:    " + str(int(encoder_reading[left_front]*100)) + "  " + str(int(encoder_reading[right_front]*100)) + "  " + str(int(encoder_reading[left_back]*100)) + "  " + str(int(encoder_reading[right_back]*100))
+      cntSpeed = total_count[0] = total_count[1] = total_count[2] = total_count[3] = 0
 
       
 
