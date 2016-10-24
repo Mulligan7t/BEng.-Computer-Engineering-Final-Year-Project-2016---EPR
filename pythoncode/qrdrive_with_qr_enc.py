@@ -121,12 +121,12 @@ def encoderfeedback():
   LFprev_error = LFerror
 
   PWMoutput[left_front] = PWMoutput[left_front] + (Kp*LFerror + Ki*LFintegral + Kd*LFderivative)
-  print "LFerror: " + str(LFerror),
-  print "  LFintegral: " + str(LFintegral),
-  print "  LFderv: " + str(LFderivative)
+  #print "LFerror: " + str(LFerror),
+  #print "  LFintegral: " + str(LFintegral),
+  #print "  LFderv: " + str(LFderivative)
   if(speed_0==0 and math.fabs(motor_setpoint[left_front]) > 0):
     PWMoutput[left_front] = math.copysign(min_interia, motor_setpoint[left_front]) # return value of min_interia with the sign of motor_setpoint[left_front]
-    print "PWMoutput[left_front] set to min_interia-----------------"
+    #print "PWMoutput[left_front] set to min_interia-----------------"
 
   if(math.fabs(motor_setpoint[left_front]) > 0 and math.fabs(speed_0)>1.0 and math.fabs(PWMoutput[left_front]) <min_dynamic):
     PWMoutput[left_front] = math.copysign(min_dynamic, motor_setpoint[left_front]) # return value of min_dynamic with the sign of motor_setpoint[left_front]
@@ -142,7 +142,8 @@ def encoderfeedback():
     PWMoutput[right_back] = math.copysign(254, motor_setpoint[right_back]) # return value of 254 with the sign of motor_setpoint[right_back]
 
   PWMoutput[left_front] = PWMoutput[right_front] = PWMoutput[left_back] = PWMoutput[right_back] = 254
-  print "speed_0:  " + str(speed_0)
+  #print "speed_0:  " + str(speed_0)
+  
   print "PWM:   " + str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
   return str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
 
