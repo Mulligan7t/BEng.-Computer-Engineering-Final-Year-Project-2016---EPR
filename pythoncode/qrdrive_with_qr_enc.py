@@ -123,16 +123,22 @@ def encoderfeedback():
     derivative_error[x_wheel] = encoder_reading[x_wheel] - prev_error[x_wheel]
     prev_error[x_wheel] = encoder_reading[x_wheel]
     PWMoutput[x_wheel] = PWMoutput[x_wheel] + (Kp*encoder_reading[x_wheel] + Ki*integral_error[x_wheel] + Kd*derivative_error[x_wheel])
-  #print "encoder_reading[x_wheel]: " + str(encoder_reading[x_wheel]),
-  #print "  integral_error[x_wheel]: " + str(integral_error[x_wheel]),
-  #print "  derivative_error[x_wheel]: " + str(derivative_error[x_wheel])
+    #print "encoder_reading[x_wheel]: " + str(encoder_reading[x_wheel]),
+    #print "  integral_error[x_wheel]: " + str(integral_error[x_wheel]),
+    #print "  derivative_error[x_wheel]: " + str(derivative_error[x_wheel])
 
   for x_wheel in xrange(4):  
     if(encoder_reading[x_wheel]==0 and math.fabs(motor_setpoint[x_wheel]) > 0):
+      #motor is not moving
+      #motor set to run forward or backward
       PWMoutput[x_wheel] = math.copysign(min_interia, motor_setpoint[x_wheel]) # return value of min_interia with the sign of motor_setpoint[x_wheel]
-    #print "PWMoutput[x_wheel] set to min_interia-----------------"
+      print "PWMoutput[x_wheel] set to min_interia-----------------"
 
     if(math.fabs(motor_setpoint[x_wheel]) > 0 and math.fabs(encoder_reading[x_wheel])>1.0 and math.fabs(PWMoutput[x_wheel]) <min_dynamic):
+      #motor set to run forward or backward
+      #motor is running at least 1.0 forward or backward
+      #PWMoutput is lower than min_dynamic
+      #THEN set PWMoutput to min_dynamic
       PWMoutput[x_wheel] = math.copysign(min_dynamic, motor_setpoint[x_wheel]) # return value of min_dynamic with the sign of motor_setpoint[x_wheel]
 
   
