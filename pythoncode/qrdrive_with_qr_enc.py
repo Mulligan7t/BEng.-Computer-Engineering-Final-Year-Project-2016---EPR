@@ -53,11 +53,7 @@ speedcalib = 2.55
 
 PWMoutput = [0,0,0,0]
 
-
-LFset = 0
-RFset = 0
-LBset = 0
-RBset = 0
+motor_setpoint = [0,0,0,0]
 
 Kp = 0.5
 Ki = 0.2
@@ -69,51 +65,53 @@ LFprev_error = 0
 min_interia = 254 #minimum PWM to break intertia and start turning
 min_dynamic = 150 #lower than this and will stall even after rotation has begun
 
-
-testarray = [0,1,2,3]
+left_front = 0
+right_front = 1
+left_back = 2
+right_back = 3
 
 def drive(coX0, coX1, coY0, coY1):
-  global LFset, RFset, LBset, RBset
+  global motor_setpoint[left_front], motor_setpoint[right_front], motor_setpoint[left_back], motor_setpoint[right_back]
   print testarray
   print testarray[2]
 
-  LFset = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-  RFset = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-  LBset = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-  RBset = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+  motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+  motor_setpoint[right_front] = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+  motor_setpoint[left_back] = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+  motor_setpoint[right_back] = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
 
   coXdiff = coX0-coX1
   coYdiff = coY0-coY1
   
   if (False):
-    LFset = 255 
-    RFset = 255 
-    LBset = 255
-    RBset = 255
+    motor_setpoint[left_front] = 255 
+    motor_setpoint[right_front] = 255 
+    motor_setpoint[left_back] = 255
+    motor_setpoint[right_back] = 255
 
   encoderRate = 7
-  LFset = LFset//encoderRate
-  RFset = RFset//encoderRate
-  LBset = LBset//encoderRate
-  RBset = RBset//encoderRate
+  motor_setpoint[left_front] = motor_setpoint[left_front]//encoderRate
+  motor_setpoint[right_front] = motor_setpoint[right_front]//encoderRate
+  motor_setpoint[left_back] = motor_setpoint[left_back]//encoderRate
+  motor_setpoint[right_back] = motor_setpoint[right_back]//encoderRate
 
 
 
-  print "SET:   " + str(LFset) + " " + str(RFset) + " " + str(LBset) + " " + str(RBset) + "\r"
+  print "SET:   " + str(motor_setpoint[left_front]) + " " + str(motor_setpoint[right_front]) + " " + str(motor_setpoint[left_back]) + " " + str(motor_setpoint[right_back]) + "\r"
 
 def encoderfeedback():
   global PWMoutput, LFintegral, LFprev_error
-  #PWMoutput[0] = PWMoutput[0] + math.ceil(0.1*(LFset-speed_0))
-  #PWMoutput[1] = PWMoutput[1] + math.ceil(0.1*(RFset-speed_1)) 
-  #PWMoutput[2] = PWMoutput[2] + math.ceil(0.1*(LBset-speed_2))
-  #PWMoutput[3] = PWMoutput[3] + math.ceil(0.1*(RBset-speed_3))
+  #PWMoutput[left_front] = PWMoutput[left_front] + math.ceil(0.1*(motor_setpoint[left_front]-speed_0))
+  #PWMoutput[right_front] = PWMoutput[right_front] + math.ceil(0.1*(motor_setpoint[right_front]-speed_1)) 
+  #PWMoutput[left_back] = PWMoutput[left_back] + math.ceil(0.1*(motor_setpoint[left_back]-speed_2))
+  #PWMoutput[right_back] = PWMoutput[right_back] + math.ceil(0.1*(motor_setpoint[right_back]-speed_3))
 
   #if the wheel is not turning i.e. (measured) speed_0 = 0.0, then set to min_interia
 
-  LFerror = LFset-speed_0
-  RFerror = RFset-speed_1
-  LBerror = LBset-speed_2
-  RBerror = RBset-speed_3
+  LFerror = motor_setpoint[left_front]-speed_0
+  RFerror = motor_setpoint[right_front]-speed_1
+  LBerror = motor_setpoint[left_back]-speed_2
+  RBerror = motor_setpoint[right_back]-speed_3
 
   LFintegral = LFintegral + LFerror
 
@@ -123,31 +121,31 @@ def encoderfeedback():
   LFderivative = LFerror - LFprev_error
   LFprev_error = LFerror
 
-  PWMoutput[0] = PWMoutput[0] + (Kp*LFerror + Ki*LFintegral + Kd*LFderivative)
+  PWMoutput[left_front] = PWMoutput[left_front] + (Kp*LFerror + Ki*LFintegral + Kd*LFderivative)
   print "LFerror: " + str(LFerror),
   print "  LFintegral: " + str(LFintegral),
   print "  LFderv: " + str(LFderivative)
-  if(speed_0==0 and math.fabs(LFset) > 0):
-    PWMoutput[0] = math.copysign(min_interia, LFset) # return value of min_interia with the sign of LFset
-    print "PWMoutput[0] set to min_interia-----------------"
+  if(speed_0==0 and math.fabs(motor_setpoint[left_front]) > 0):
+    PWMoutput[left_front] = math.copysign(min_interia, motor_setpoint[left_front]) # return value of min_interia with the sign of motor_setpoint[left_front]
+    print "PWMoutput[left_front] set to min_interia-----------------"
 
-  if(math.fabs(LFset) > 0 and math.fabs(speed_0)>1.0 and math.fabs(PWMoutput[0]) <min_dynamic):
-    PWMoutput[0] = math.copysign(min_dynamic, LFset) # return value of min_dynamic with the sign of LFset
+  if(math.fabs(motor_setpoint[left_front]) > 0 and math.fabs(speed_0)>1.0 and math.fabs(PWMoutput[left_front]) <min_dynamic):
+    PWMoutput[left_front] = math.copysign(min_dynamic, motor_setpoint[left_front]) # return value of min_dynamic with the sign of motor_setpoint[left_front]
 
   
-  if(math.fabs(PWMoutput[0])>254):
-    PWMoutput[0] = math.copysign(254, LFset) # return value of 254 with the sign of LFset
-  if(math.fabs(PWMoutput[1])>254):
-    PWMoutput[1] = math.copysign(254, RFset) # return value of 254 with the sign of RFset
-  if(math.fabs(PWMoutput[2])>254):
-    PWMoutput[2] = math.copysign(254, LBset) # return value of 254 with the sign of LBset
-  if(math.fabs(PWMoutput[3])>254):
-    PWMoutput[3] = math.copysign(254, RBset) # return value of 254 with the sign of RBset
+  if(math.fabs(PWMoutput[left_front])>254):
+    PWMoutput[left_front] = math.copysign(254, motor_setpoint[left_front]) # return value of 254 with the sign of motor_setpoint[left_front]
+  if(math.fabs(PWMoutput[right_front])>254):
+    PWMoutput[right_front] = math.copysign(254, motor_setpoint[right_front]) # return value of 254 with the sign of motor_setpoint[right_front]
+  if(math.fabs(PWMoutput[left_back])>254):
+    PWMoutput[left_back] = math.copysign(254, motor_setpoint[left_back]) # return value of 254 with the sign of motor_setpoint[left_back]
+  if(math.fabs(PWMoutput[right_back])>254):
+    PWMoutput[right_back] = math.copysign(254, motor_setpoint[right_back]) # return value of 254 with the sign of motor_setpoint[right_back]
 
-  PWMoutput[0] = PWMoutput[1] = PWMoutput[2] = PWMoutput[3] = 254
+  PWMoutput[left_front] = PWMoutput[right_front] = PWMoutput[left_back] = PWMoutput[right_back] = 254
   print "speed_0:  " + str(speed_0)
-  print "PWM:   " + str(int(PWMoutput[0])) + " " + str(int(PWMoutput[1])) + " " + str(int(PWMoutput[2])) + " " + str(int(PWMoutput[3])) + "\r"
-  return str(int(PWMoutput[0])) + " " + str(int(PWMoutput[1])) + " " + str(int(PWMoutput[2])) + " " + str(int(PWMoutput[3])) + "\r"
+  print "PWM:   " + str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
+  return str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
 
 def camqr():
   if len(argv) < 2: exit(1)
@@ -256,12 +254,12 @@ def rotary_interrupt_0(A_or_B):
 
 
    if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
-      lock_rotary[0].acquire()                    # get lock 
+      lock_rotary[left_front].acquire()                    # get lock 
       if A_or_B == Enc_0_B:                     # Turning direction depends on 
-         rotary_counters[0] += 1                  # which input gave last interrupt
+         rotary_counters[left_front] += 1                  # which input gave last interrupt
       else:                                     # so depending on direction either
-         rotary_counters[0] -= 1                  # increase or decrease counter
-      lock_rotary[0].release()                    # and release lock
+         rotary_counters[left_front] -= 1                  # increase or decrease counter
+      lock_rotary[left_front].release()                    # and release lock
    return                                       # THAT'S IT
 
 # Rotarty encoder interrupt:
@@ -281,12 +279,12 @@ def rotary_interrupt_1(A_or_B):
 
 
    if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
-      lock_rotary[1].acquire()                    # get lock 
+      lock_rotary[right_front].acquire()                    # get lock 
       if A_or_B == Enc_1_B:                     # Turning direction depends on 
-         rotary_counters[1] += 1                  # which input gave last interrupt
+         rotary_counters[right_front] += 1                  # which input gave last interrupt
       else:                                     # so depending on direction either
-         rotary_counters[1] -= 1                  # increase or decrease counter
-      lock_rotary[1].release()                    # and release lock
+         rotary_counters[right_front] -= 1                  # increase or decrease counter
+      lock_rotary[right_front].release()                    # and release lock
    return                                       # THAT'S IT
 
 # Rotarty encoder interrupt:
@@ -306,12 +304,12 @@ def rotary_interrupt_2(A_or_B):
 
 
    if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
-      lock_rotary[2].acquire()                    # get lock 
+      lock_rotary[left_back].acquire()                    # get lock 
       if A_or_B == Enc_2_B:                     # Turning direction depends on 
-         rotary_counters[2] += 1                  # which input gave last interrupt
+         rotary_counters[left_back] += 1                  # which input gave last interrupt
       else:                                     # so depending on direction either
-         rotary_counters[2] -= 1                  # increase or decrease counter
-      lock_rotary[2].release()                    # and release lock
+         rotary_counters[left_back] -= 1                  # increase or decrease counter
+      lock_rotary[left_back].release()                    # and release lock
    return                                       # THAT'S IT
 
 # Rotarty encoder interrupt:
@@ -331,12 +329,12 @@ def rotary_interrupt_3(A_or_B):
 
 
    if (Switch_A and Switch_B):                  # Both one active? Yes -> end of sequence
-      lock_rotary[3].acquire()                    # get lock 
+      lock_rotary[right_back].acquire()                    # get lock 
       if A_or_B == Enc_3_B:                     # Turning direction depends on 
-         rotary_counters[3] += 1                  # which input gave last interrupt
+         rotary_counters[right_back] += 1                  # which input gave last interrupt
       else:                                     # so depending on direction either
-         rotary_counters[3] -= 1                  # increase or decrease counter
-      lock_rotary[3].release()                    # and release lock
+         rotary_counters[right_back] -= 1                  # increase or decrease counter
+      lock_rotary[right_back].release()                    # and release lock
    return                                       # THAT'S IT
  
 
@@ -472,34 +470,34 @@ def main():
                                   # changes value until we get them
                                   # and reset them
                                   
-    lock_rotary[0].acquire()               # get lock for rotary switch
-    NewCounter_0 = rotary_counters[0]      # get counter value
-    rotary_counters[0] = 0                 # RESET IT TO 0
-    lock_rotary[0].release()               # and release lock
+    lock_rotary[left_front].acquire()               # get lock for rotary switch
+    NewCounter_0 = rotary_counters[left_front]      # get counter value
+    rotary_counters[left_front] = 0                 # RESET IT TO 0
+    lock_rotary[left_front].release()               # and release lock
              
     if (NewCounter_0 !=0):               # Counter has CHANGED
        TotalCount_0 = TotalCount_0 + NewCounter_0
 
-    lock_rotary[1].acquire()               # get lock for rotary switch
-    NewCounter_1 = rotary_counters[1]      # get counter value
-    rotary_counters[1] = 0                 # RESET IT TO 0
-    lock_rotary[1].release()               # and release lock
+    lock_rotary[right_front].acquire()               # get lock for rotary switch
+    NewCounter_1 = rotary_counters[right_front]      # get counter value
+    rotary_counters[right_front] = 0                 # RESET IT TO 0
+    lock_rotary[right_front].release()               # and release lock
              
     if (NewCounter_1 !=0):               # Counter has CHANGED
        TotalCount_1 = TotalCount_1 + NewCounter_1
 
-    lock_rotary[2].acquire()               # get lock for rotary switch
-    NewCounter_2 = rotary_counters[2]      # get counter value
-    rotary_counters[2] = 0                 # RESET IT TO 0
-    lock_rotary[2].release()               # and release lock
+    lock_rotary[left_back].acquire()               # get lock for rotary switch
+    NewCounter_2 = rotary_counters[left_back]      # get counter value
+    rotary_counters[left_back] = 0                 # RESET IT TO 0
+    lock_rotary[left_back].release()               # and release lock
              
     if (NewCounter_2 !=0):               # Counter has CHANGED
        TotalCount_2 = TotalCount_2 + NewCounter_2
 
-    lock_rotary[3].acquire()               # get lock for rotary switch
-    NewCounter_3 = rotary_counters[3]      # get counter value
-    rotary_counters[3] = 0                 # RESET IT TO 0
-    lock_rotary[3].release()               # and release lock
+    lock_rotary[right_back].acquire()               # get lock for rotary switch
+    NewCounter_3 = rotary_counters[right_back]      # get counter value
+    rotary_counters[right_back] = 0                 # RESET IT TO 0
+    lock_rotary[right_back].release()               # and release lock
              
     if (NewCounter_3 !=0):               # Counter has CHANGED
        TotalCount_3 = TotalCount_3 + NewCounter_3
