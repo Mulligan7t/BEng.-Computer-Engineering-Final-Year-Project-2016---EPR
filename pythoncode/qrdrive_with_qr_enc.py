@@ -368,7 +368,7 @@ def main():
 
   print "The server is not running"
   
-  global rotary_counters, lock_rotary, encoder_reading
+  global rotary_counters, lock_rotary, encoder_reading, magnetic_heading
 
   total_count = [0,0,0,0]
   new_counter = [0,0,0,0]
