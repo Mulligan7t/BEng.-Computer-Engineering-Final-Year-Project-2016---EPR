@@ -353,7 +353,7 @@ def main():
   #    s.connect(Address)
   #  except Exception, e:
 
-  print "The server is not running"
+  print "\n\n\n\n\n\nThe server is not running"
   
   global rotary_counters, lock_rotary, encoder_reading
 
