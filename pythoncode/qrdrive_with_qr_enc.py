@@ -61,7 +61,7 @@ min_dynamic = 150 #lower than this and will stall even after rotation has begun
 
 scaling_factor = 2000
 
-def drive(coX0, coX1, coY0, coY1):
+def drive(coY0, coY1, coX0, coX1):
   global motor_setpoint
 
   coXdiff = coX0-coX1
@@ -401,6 +401,7 @@ def main():
   # - X X X
   # - - - -
   
+
   route  = (A,0),(A,1),(B,1),(C,1),(C,2),(C,3)
   routelen = 5
 
