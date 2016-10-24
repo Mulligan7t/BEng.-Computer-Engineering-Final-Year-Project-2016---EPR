@@ -32,20 +32,15 @@ lock_rotary = [threading.Lock(),threading.Lock(),threading.Lock(),threading.Lock
 
 Current_0_A = 1                     # Assume that rotary switch is not 
 Current_0_B = 1                     # moving while we init software
-lock_rotary[0] = threading.Lock()     # create lock for rotary switch
-
 
 Current_1_A = 1                     # Assume that rotary switch is not 
 Current_1_B = 1                     # moving while we init software
-lock_rotary[1] = threading.Lock()     # create lock for rotary switch
    
 Current_2_A = 1                     # Assume that rotary switch is not 
 Current_2_B = 1                     # moving while we init software
-lock_rotary[2] = threading.Lock()     # create lock for rotary switch
 
 Current_3_A = 1                     # Assume that rotary switch is not 
 Current_3_B = 1                     # moving while we init software
-lock_rotary[3] = threading.Lock()     # create lock for rotary switch
 
 
 WHEEL_RADIUS=30
