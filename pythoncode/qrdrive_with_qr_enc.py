@@ -94,6 +94,8 @@ def drive(coX0, coX1, coY0, coY1):
   encoderRate = 7
 
   for x_wheel in xrange(3):
+    print "x_wheel: ",
+    print x_wheel
     motor_setpoint[x_wheel] = motor_setpoint[x_wheel]//encoderRate
 
   print "SET:   " + str(motor_setpoint[left_front]) + " " + str(motor_setpoint[right_front]) + " " + str(motor_setpoint[left_back]) + " " + str(motor_setpoint[right_back]) + "\r"
