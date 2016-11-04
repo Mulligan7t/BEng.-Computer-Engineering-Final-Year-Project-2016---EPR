@@ -7,20 +7,58 @@ from graphics import *
 if len(argv) < 2: exit(1)
 import sys, serial, argparse
 import numpy as np
-from time import sleep
+import time
 from collections import deque
 import socket
 import RPi.GPIO as GPIO
 import threading
 import math
+from smbus import SMBus
+
+busNum = 1
+b = SMBus(busNum)
+LSM = 0x1d
+LSM_WHOAMI = 0b1001001 #Device self-id
+
+#Control register addresses -- from LSM303D datasheet
+CTRL_0 = 0x1F #General settings
+CTRL_1 = 0x20 #Turns on accelerometer and configures data rate
+CTRL_2 = 0x21 #Self test accelerometer, anti-aliasing accel filter
+CTRL_3 = 0x22 #Interrupts
+CTRL_4 = 0x23 #Interrupts
+CTRL_5 = 0x24 #Turns on temperature sensor
+CTRL_6 = 0x25 #Magnetic resolution selection, data rate config
+CTRL_7 = 0x26 #Turns on magnetometer and adjusts mode
+#Registers holding twos-complemented MSB and LSB of magnetometer readings -- from LSM303D datasheet
+MAG_X_LSB = 0x08 # x
+MAG_X_MSB = 0x09
+MAG_Y_LSB = 0x0A # y
+MAG_Y_MSB = 0x0B
+MAG_Z_LSB = 0x0C # z
+MAG_Z_MSB = 0x0D
+#Registers holding twos-complemented MSB and LSB of magnetometer readings -- from LSM303D datasheet
+ACC_X_LSB = 0x28 # x
+ACC_X_MSB = 0x29
+ACC_Y_LSB = 0x2A # y
+ACC_Y_MSB = 0x2B
+ACC_Z_LSB = 0x2C # z
+ACC_Z_MSB = 0x2D
+#Registers holding 12-bit right justified, twos-complemented temperature data -- from LSM303D datasheet
+TEMP_MSB = 0x05
+TEMP_LSB = 0x06
 
                           # GPIO Ports
 Enc_1_A = 21              # Encoder input A: input GPIO 21
 Enc_1_B = 20              # Encoder input B: input GPIO 20
 Enc_0_A = 1               # Encoder input A: input GPIO 1 
 Enc_0_B = 0               # Encoder input B: input GPIO 0
-Enc_2_A = 2               # Encoder input A: input GPIO 2 
-Enc_2_B = 3               # Encoder input B: input GPIO 3
+  
+#Enc_2_A = 2               # Encoder input A: input GPIO 2 
+#Enc_2_B = 3               # Encoder input B: input GPIO 3
+
+Enc_2_A = 6              # over writes because required for I2C
+Enc_2_B = 5             # over writes because required for I2C
+
 Enc_3_A = 14              # Encoder input A: input GPIO 14 
 Enc_3_B = 15              # Encoder input B: input GPIO 15
 
@@ -56,53 +94,109 @@ Kd = 0.1
 integral_error = [0,0,0,0]
 prev_error = [0,0,0,0]
 
-min_interia = 254 #minimum PWM to break intertia and start turning
-min_dynamic = 150 #lower than this and will stall even after rotation has begun
+min_interia = 150 #minimum PWM to break intertia and start turning
+min_dynamic = 100 #lower than this and will stall even after rotation has begun
 
 scaling_factor = 1000
 
-magnetic_heading = 0
+magnetic_heading_LSM303 = 0
+
+route_counter = 0 #what position on the route are we on now.
+
+ext_var = 0
+stat = 0
+prev_stat = 0
 
 def drive(coY0, coY1, coX0, coX1):
-  global motor_setpoint, magnetic_heading
+  global motor_setpoint, magnetic_heading_LSM303, ext_var,route_counter
 
   coXdiff = coX1-coX0
   coYdiff = coY1-coY0
-  print coXdiff
-  print coYdiff
+  #print coXdiff
+  #print coYdiff
 
-#  linearX = coXdiff*scaling_factor
-#  linearY = coYdiff*scaling_factor
-#  angularZ = 0
+  #  linearX = coXdiff*scaling_factor
+  #  linearY = coYdiff*scaling_factor
+  #  angularZ = 0
+
+  if ext_var is None:
+    desired_heading = 90.0 - math.degrees(math.atan2(coYdiff,coXdiff))
+    if(desired_heading< 0):
+      desired_heading= desired_heading+ 360    
+  else:
+    desired_heading = int(ext_var)
   
-  print "atan2"
-  heading = 90.0 - math.degrees(math.atan2(coYdiff,coXdiff))
-  if(heading < 0):
-    heading = heading + 360
-  print heading
 
-  linearX = 0
-  linearY = 0
-  angularZ = math.radians(heading)
+  # if(desired_heading>180):
+  #   desired_heading = desired_heading - 360
 
-  print "magnetic_heading :",
-  print magnetic_heading
+  print "ORIG:       ", magnetic_heading_LSM303
+  magnetic_heading_LSM303_360 = magnetic_heading_LSM303
+  
+  # if(magnetic_heading_LSM303>180):
+  #   magnetic_heading_LSM303_360 = magnetic_heading_LSM303 - 360
 
-  motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-  motor_setpoint[right_front] = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-  motor_setpoint[left_back] = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-  motor_setpoint[right_back] = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+  heading_adjustment = magnetic_heading_LSM303_360 - desired_heading
+  
+  if (math.fabs(heading_adjustment) < 2):
+    heading_adjustment = 0
+    route_counter = route_counter + 1 #move to next qr code because robot is facing correct direction
+    print "route counter   ", route_counter
+
+  if (heading_adjustment>180):
+    heading_adjustment = heading_adjustment - 360
+
+  print "adj_head = mag_head_LSM - desired_heading"
+  print heading_adjustment, " = " , magnetic_heading_LSM303_360, " - " , desired_heading
+
+  accuracy = 2
+  left_dir = right_dir = 0 #stop all
+
+  if(math.fabs(heading_adjustment)<=accuracy):
+      left_dir = right_dir = 0 #stop all
+      print "first"
+  elif (heading_adjustment<accuracy):
+    left_dir = 1*math.fabs(heading_adjustment)/100
+    right_dir = -1*math.fabs(heading_adjustment)/100
+    print "second"
+  elif(heading_adjustment>accuracy):
+    left_dir = -1*math.fabs(heading_adjustment)/100
+    right_dir = 1*math.fabs(heading_adjustment)/100
+    print "third"
+    
+  motor_setpoint[left_front] = 255 * left_dir
+  motor_setpoint[left_back] = 255 * left_dir
+
+
+  motor_setpoint[right_front] = 255 * right_dir
+  motor_setpoint[right_back] = 255 * right_dir
+
+
+  if(True):
+    linearX = 2000
+    linearY = -1000 #next
+    angularZ = 0
+    print "heading adj--------------------------------------------------"
+    print heading_adjustment
+    
+    motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+    motor_setpoint[right_front] = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+    motor_setpoint[left_back] = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+    motor_setpoint[right_back] = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
 
   if (False):
-    motor_setpoint[left_front] = 255 
-    motor_setpoint[right_front] = 255 
-    motor_setpoint[left_back] = 255
-    motor_setpoint[right_back] = 255
+    all_dir = 1
+    motor_setpoint[left_front] = 100 * all_dir
+    motor_setpoint[right_front] = 100 * all_dir
+    motor_setpoint[left_back] = 100 * all_dir
+    motor_setpoint[right_back] = 100 * all_dir
 
   encoderRate = 7
 
   for x_wheel in xrange(4):
     motor_setpoint[x_wheel] = motor_setpoint[x_wheel]//encoderRate
+    if(math.fabs(motor_setpoint[x_wheel])<=1):
+      motor_setpoint[x_wheel] = 0
 
   print "SET:   " + str(motor_setpoint[left_front]) + " " + str(motor_setpoint[right_front]) + " " + str(motor_setpoint[left_back]) + " " + str(motor_setpoint[right_back]) + "\r"
 
@@ -127,6 +221,7 @@ def encoderfeedback():
     if((encoder_reading[x_wheel] < 0.5) or (integral_error[x_wheel] > 254)):
       integral_error[x_wheel] = 0
 
+
   for x_wheel in xrange(4):
     derivative_error[x_wheel] = encoder_reading[x_wheel] - prev_error[x_wheel]
     prev_error[x_wheel] = encoder_reading[x_wheel]
@@ -140,9 +235,9 @@ def encoderfeedback():
       #motor is not moving
       #motor set to run forward or backward
       PWMoutput[x_wheel] = math.copysign(min_interia, motor_setpoint[x_wheel]) # return value of min_interia with the sign of motor_setpoint[x_wheel]
-      print "  ",
-      print x_wheel,
-      print "  ",
+      #print "  ",
+      #print x_wheel,
+      #print "  ",
 
     if(math.fabs(motor_setpoint[x_wheel]) > 0 and math.fabs(encoder_reading[x_wheel])>1.0 and math.fabs(PWMoutput[x_wheel]) <min_dynamic):
       #motor set to run forward or backward
@@ -154,12 +249,16 @@ def encoderfeedback():
   
     if(math.fabs(PWMoutput[x_wheel])>254):
       PWMoutput[x_wheel] = math.copysign(254, motor_setpoint[x_wheel]) # return value of 254 with the sign of motor_setpoint[x_wheel]
-  
+    
+    if(encoder_reading[x_wheel] ==0 and math.fabs(motor_setpoint[x_wheel]) <= 1 or motor_setpoint[x_wheel] == 0):
+      motor_setpoint[x_wheel] = 0
+      PWMoutput[x_wheel] = 0
   print
 
 
   #PWMoutput[left_front] = PWMoutput[right_front] = PWMoutput[left_back] = PWMoutput[right_back] = 254
-  #print "encoder_reading[left_front]:  " + str(encoder_reading[left_front])
+  print "encoder  "+ str(encoder_reading[0])+ " " + str(encoder_reading[1])+" " + str(encoder_reading[2])+ " " +str(encoder_reading[3])
+  
   
   print "PWM:   " + str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
   return str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
@@ -175,6 +274,8 @@ def camqr():
 
   # obtain image data
   pil = Image.open('image.jpg').convert('L')
+  #pil = pil.resize((500,500),Image.ANTIALIAS)
+  #pil.save('resized_image.jpg')
   width, height = pil.size
   raw = pil.tostring()
 
@@ -190,41 +291,48 @@ def camqr():
       print 'decoded', symbol.type, symbol.location, 'symbol', '"%s"' % symbol.data
       barloc = symbol.location
 
+  try:
+    print barloc[0][0]
+      # clean up
+    del(image)
 
-  print barloc[0][0]
+    win = GraphWin('qr', 500, 500)
+    pt = Circle(Point(barloc[0][0],barloc[0][1]),20)
+    pt.draw(win)
+    pt = Circle(Point(barloc[1][0],barloc[1][1]),5)
+    pt.draw(win) 
+    i = 0
+    while (i<3):
+        line = Line(Point(barloc[i][0],barloc[i][1]), Point(barloc[i+1][0], barloc[i+1][1]))
+        line.draw(win)
+        i = i + 1
+    line = Line(Point(barloc[i][0],barloc[i][1]), Point(barloc[0][0], barloc[0][1]))
+    line.draw(win)
+    sqrt =((barloc[0][0] - barloc[2][0])**2 + (barloc[0][1] - barloc[2][1])**2)**0.5
+    a =float(barloc[0][0] - barloc[2][0])
+    b =float(barloc[0][1] - barloc[2][1])
+    a = a / sqrt
+    b = b / sqrt
+    print sqrt
+    print a
+    print b
 
-  # clean up
-  del(image)
+    a = a * 100
+    b = b * 100
+    c = 250
 
-  win = GraphWin('qr', 500, 500)
-  pt = Circle(Point(barloc[0][0],barloc[0][1]),20)
-  pt.draw(win)
-  pt = Circle(Point(barloc[1][0],barloc[1][1]),5)
-  pt.draw(win) 
-  i = 0
-  while (i<3):
-      line = Line(Point(barloc[i][0],barloc[i][1]), Point(barloc[i+1][0], barloc[i+1][1]))
-      line.draw(win)
-      i = i + 1
-  line = Line(Point(barloc[i][0],barloc[i][1]), Point(barloc[0][0], barloc[0][1]))
-  line.draw(win)
-  sqrt =((barloc[0][0] - barloc[2][0])**2 + (barloc[0][1] - barloc[2][1])**2)**0.5
-  a =float(barloc[0][0] - barloc[2][0])
-  b =float(barloc[0][1] - barloc[2][1])
-  a = a / sqrt
-  b = b / sqrt
-  print sqrt
-  print a
-  print b
+    line = Line(Point(c,c), Point(c+a,c+b))
+    line.draw(win)
 
-  a = a * 100
-  b = b * 100
-  c = 250
+    #win.getMouse() #pause for click in window
 
-  line = Line(Point(c,c), Point(c+a,c+b))
-  line.draw(win)
-
-  #win.getMouse() #pause for click in window
+  except Exception, e:
+    print "Exception: ", e
+  else:
+    pass
+  finally:
+    pass
+ 
 
 # initialize interrupt handlers
 def init():
@@ -353,7 +461,70 @@ def rotary_interrupt_3(A_or_B):
          rotary_counters[right_back] -= 1                  # increase or decrease counter
       lock_rotary[right_back].release()                    # and release lock
    return                                       # THAT'S IT
- 
+
+def twos_comp_combine(msb, lsb):
+    twos_comp = 256*msb + lsb
+    if twos_comp >= 32768:
+        return twos_comp - 65536
+    else:
+        return twos_comp
+
+def init_LSM303D():
+  if b.read_byte_data(LSM, 0x0f) == LSM_WHOAMI:
+      print 'LSM303D detected successfully.'
+  else:
+      print 'No LSM303D detected on bus '+str(busNum)+'.'
+  b.write_byte_data(LSM, CTRL_1, 0b1010111) # enable accelerometer, 50 hz sampling
+  b.write_byte_data(LSM, CTRL_2, 0x00) #set +/- 2g full scale
+  b.write_byte_data(LSM, CTRL_5, 0b01100100) #high resolution mode, thermometer off, 6.25hz ODR
+  b.write_byte_data(LSM, CTRL_6, 0b00100000) # set +/- 4 gauss full scale
+  b.write_byte_data(LSM, CTRL_7, 0x00) #get magnetometer out of low power mode
+
+def read_LSM303D():
+  global magnetic_heading_LSM303
+  magx = twos_comp_combine(b.read_byte_data(LSM, MAG_X_MSB), b.read_byte_data(LSM, MAG_X_LSB))
+  magy = twos_comp_combine(b.read_byte_data(LSM, MAG_Y_MSB), b.read_byte_data(LSM, MAG_Y_LSB))
+  magz = twos_comp_combine(b.read_byte_data(LSM, MAG_Z_MSB), b.read_byte_data(LSM, MAG_Z_LSB))
+  # from ~/.minimu9-ahrs-cal
+
+
+  minimumx = -1583  
+  maximumx = 1970 
+  minimumy = -1608  
+  maximumy = 1810 
+  minimumz = -1369 
+  maximumz = 1988
+
+  magx = (float)(magx - minimumx) / (maximumx - minimumx) * 2 - 1
+  magy = (float)(magy - minimumy) / (maximumy - minimumy) * 2 - 1
+  magz = (float)(magz - minimumz) / (maximumz - minimumz) * 2 - 1
+
+  print "magx", magx
+  print "magy", magy
+  magnetic_heading_LSM303 = math.atan2(magy,magx)
+
+  declinationAngle =  0 - math.radians(108)
+  magnetic_heading_LSM303 += declinationAngle
+  
+  # Correct for when signs are reversed.
+  if(magnetic_heading_LSM303 < 0):
+    magnetic_heading_LSM303 = math.fsum([magnetic_heading_LSM303, 2*math.pi])
+  
+  # Check for wrap due to addition of declination.
+  if(magnetic_heading_LSM303 > 2*math.pi):
+    #magnetic_heading_LSM303 -= 2*math.pi
+    magnetic_heading_LSM303 = math.fsum([magnetic_heading_LSM303, -2*math.pi])
+
+  magnetic_heading_LSM303 = math.degrees(magnetic_heading_LSM303)
+
+  accx = twos_comp_combine(b.read_byte_data(LSM, ACC_X_MSB), b.read_byte_data(LSM, ACC_X_LSB))
+  accy = twos_comp_combine(b.read_byte_data(LSM, ACC_Y_MSB), b.read_byte_data(LSM, ACC_Y_LSB))
+  accz = twos_comp_combine(b.read_byte_data(LSM, ACC_Z_MSB), b.read_byte_data(LSM, ACC_Z_LSB))
+  
+  print "magnetic heading LSM303D: ", magnetic_heading_LSM303
+  #print "Magnetic field (x, y, z):", magx, magy, print
+  # magz "Acceleration   (x, y, z):", accx, accy, accz
+  print ""
 
 # main() function
 def main():
@@ -365,10 +536,12 @@ def main():
   #  try:
   #    s.connect(Address)
   #  except Exception, e:
+  
+  init_LSM303D()
 
   print "The server is not running"
   
-  global rotary_counters, lock_rotary, encoder_reading, magnetic_heading
+  global rotary_counters, lock_rotary, encoder_reading, magnetic_heading_LSM303, route_counter, ext_var, prev_stat, stat
 
   total_count = [0,0,0,0]
   new_counter = [0,0,0,0]
@@ -379,9 +552,10 @@ def main():
 
 
   # create parser
-  parser = argparse.ArgumentParser(description="LDR serial")
+  parser = argparse.ArgumentParser(description="QR serial")
   # add expected arguments
   parser.add_argument('--port', dest='port', required=True)
+  parser.add_argument('-ext_var', dest='ext_var', required=False)
 
   # parse args
   args = parser.parse_args()
@@ -389,6 +563,8 @@ def main():
   #strPort = '/dev/tty.usbserial-A7006Yqh'
   #strPort = 'COM8'
   strPort = args.port
+  ext_var = args.ext_var
+
 
   ser = serial.Serial(strPort, 115200)
   printx = 0
@@ -425,12 +601,24 @@ def main():
 
 
 
+
   print('reading from serial port %s...' % strPort),
   print('            plotting data...')
 
   
   frameCnt = 0
   while True:
+    prev_stat = stat
+    stat = os.stat("image.jpg").st_mtime
+    if (stat != prev_stat):
+      print "----------------------------------------------------------------------------------------------------------------------------"
+      camqr()
+
+
+    if route_counter < routelen:
+        drive(route[route_counter][0],route[route_counter+1][0], route[route_counter][1],route[route_counter+1][1])
+        ser.write(encoderfeedback())
+
     try:
       line = ser.readline()
       #print "line: ",
@@ -438,19 +626,14 @@ def main():
       
       data = [float(val) for val in line.split()]
       # print data
-      frameCnt = int(cnt / 10)
-
-      if frameCnt < routelen:
-        drive(route[frameCnt][0],route[frameCnt+1][0], route[frameCnt][1],route[frameCnt+1][1])
-        ser.write(encoderfeedback())
-
+      
       
       if(len(data) == 10):
-        magnetic_heading = data[8]
-        print "MAG"
-        print magnetic_heading
-        print data[8]
-        print data[0]
+        #magnetic_heading = data[8]
+        #print "MAG"
+        #print magnetic_heading
+        #print data[8]
+        #print data[0]
         dt = data[9]
         accXcurr = data[0]- calib
         totvelX += accXcurr*dt
@@ -469,13 +652,14 @@ def main():
           print('X   %s' % posX)
           print(' ')
         cnt += 1
-
     except ValueError:
         print('Not a float')
         
     except KeyboardInterrupt:
         ser.write("0 0 0 0\r")
         raise SystemExit
+
+    read_LSM303D() #read data from second acc and mag
 
     #    sleep(0.1)                        # sleep 100 msec
     cntSpeed = cntSpeed +1
@@ -498,7 +682,6 @@ def main():
       cntSpeed = total_count[0] = total_count[1] = total_count[2] = total_count[3] = 0
 
   print('exiting.')
-  
 
 # call main
 if __name__ == '__main__':
