@@ -8,6 +8,7 @@ if len(argv) < 2: exit(1)
 import sys, serial, argparse
 import numpy as np
 import time
+from datetime import datetime
 from collections import deque
 import socket
 import RPi.GPIO as GPIO
@@ -89,12 +90,12 @@ encoder_reading = [0,0,0,0]
 
 Kp = 0.5
 Ki = 0.2
-Kd = 0.1
+Kd = 0.3
 
 integral_error = [0,0,0,0]
 prev_error = [0,0,0,0]
 
-min_interia = 150 #minimum PWM to break intertia and start turning
+min_interia = 200 #minimum PWM to break intertia and start turning
 min_dynamic = 50 #lower than this and will stall even after rotation has begun
 
 scaling_factor = 1000
@@ -106,6 +107,8 @@ route_counter = 0 #what position on the route are we on now.
 ext_var = 0
 stat = 0
 prev_stat = 0
+prev_time = datetime.now()
+current_time = datetime.now()
 
 def drive(coY0, coY1, coX0, coX1):
   global motor_setpoint, magnetic_heading_LSM303, ext_var,route_counter
@@ -138,9 +141,9 @@ def drive(coY0, coY1, coX0, coX1):
 
   heading_adjustment = magnetic_heading_LSM303_360 - desired_heading
   
-  if (math.fabs(heading_adjustment) < 2):
+  if (math.fabs(heading_adjustment) < 1):
     heading_adjustment = 0
-    route_counter = route_counter + 1 #move to next qr code because robot is facing correct direction
+    #route_counter = route_counter + 1 #move to next qr code because robot is facing correct direction
     print "route counter   ", route_counter
 
   if (heading_adjustment>180):
@@ -149,7 +152,7 @@ def drive(coY0, coY1, coX0, coX1):
   #print "adj_head = mag_head_LSM - desired_heading"
   #print heading_adjustment, " = " , magnetic_heading_LSM303_360, " - " , desired_heading
 
-  accuracy = 2
+  accuracy = 1
   left_dir = right_dir = 0 #stop all
 
   if(math.fabs(heading_adjustment)<=accuracy):
@@ -172,13 +175,21 @@ def drive(coY0, coY1, coX0, coX1):
   motor_setpoint[right_back] = 255 * right_dir
 
 
-  if(True):
-    linearX = 2000
-    linearY = -1000 #next
+  print "heading adj--------------------------------------------------"
+  print heading_adjustment
+  angularZ = math.radians(heading_adjustment)
+  print "current heading: "
+  print magnetic_heading_LSM303_360 
+
+  if(False):
+    linearX = 0
+    linearY = 0 #next
     angularZ = 0
-    #print "heading adj--------------------------------------------------"
-    #print heading_adjustment
-    
+    print "heading adj--------------------------------------------------"
+    print heading_adjustment
+    angularZ = math.radians(heading_adjustment)
+    print "current heading: "
+    print magnetic_heading_LSM303_360
     motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
     motor_setpoint[right_front] = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
     motor_setpoint[left_back] = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
@@ -186,10 +197,10 @@ def drive(coY0, coY1, coX0, coX1):
 
   if (False):
     all_dir = 1
-    motor_setpoint[left_front] = 100 * all_dir
-    motor_setpoint[right_front] = 100 * all_dir
-    motor_setpoint[left_back] = 100 * all_dir
-    motor_setpoint[right_back] = 100 * all_dir
+    motor_setpoint[left_front] = 255 * all_dir
+    motor_setpoint[right_front] = 255 * all_dir
+    motor_setpoint[left_back] = 255 * all_dir
+    motor_setpoint[right_back] = 255 * all_dir
 
   encoderRate = 9
 
@@ -213,24 +224,28 @@ def encoderfeedback():
   current_error = [0,0,0,0]
   derivative_error = [0,0,0,0]
   for x_wheel in xrange(4):
-    encoder_reading[x_wheel] = motor_setpoint[x_wheel]-encoder_reading[x_wheel]
+    current_error[x_wheel] = motor_setpoint[x_wheel]-encoder_reading[x_wheel]
 
   for x_wheel in xrange(4):
-    integral_error[x_wheel] = integral_error[x_wheel] + encoder_reading[x_wheel]
+    integral_error[x_wheel] = integral_error[x_wheel] + current_error[x_wheel]
 
   for x_wheel in xrange(4):
-    if((encoder_reading[x_wheel] < 0.5) or (integral_error[x_wheel] > 254)):
+    if((current_error[x_wheel] < 2) or (integral_error[x_wheel] > 254)):
       integral_error[x_wheel] = 0
 
 
   for x_wheel in xrange(4):
-    derivative_error[x_wheel] = encoder_reading[x_wheel] - prev_error[x_wheel]
-    prev_error[x_wheel] = encoder_reading[x_wheel]
-    PWMoutput[x_wheel] = PWMoutput[x_wheel] + (Kp*encoder_reading[x_wheel] + Ki*integral_error[x_wheel] + Kd*derivative_error[x_wheel])
+    derivative_error[x_wheel] = current_error[x_wheel] - prev_error[x_wheel]
+    prev_error[x_wheel] = current_error[x_wheel]
+    PWMoutput[x_wheel] = PWMoutput[x_wheel] + (Kp*current_error[x_wheel] + Ki*integral_error[x_wheel] + Kd*derivative_error[x_wheel])
     #print "encoder_reading[x_wheel]: " + str(encoder_reading[x_wheel]),
     #print "  integral_error[x_wheel]: " + str(integral_error[x_wheel]),
     #print "  derivative_error[x_wheel]: " + str(derivative_error[x_wheel])
-      
+  print "encoder_reading[left_front]: " + str(encoder_reading[left_front]),
+  print "  current_error[left_front]: " + str(current_error[left_front]),
+  print "  integral_error[left_front]: " + str(integral_error[left_front]),
+  print "  derivative_error[left_front]: " + str(derivative_error[left_front])
+        
   for x_wheel in xrange(4):  
     if(encoder_reading[x_wheel]==0 and math.fabs(motor_setpoint[x_wheel]) > 0):
       #motor is not moving
@@ -504,7 +519,7 @@ def read_LSM303D():
   #print "magy", magy
   magnetic_heading_LSM303 = math.atan2(magy,magx)
 
-  declinationAngle =  0 - math.radians(108)
+  declinationAngle =  0 - math.radians(150) #150
   magnetic_heading_LSM303 += declinationAngle
   
   # Correct for when signs are reversed.
@@ -530,159 +545,175 @@ def read_LSM303D():
 # main() function
 def main():
   
-  #  camqr()
-
-  #  Address=("127.0.0.1",5000)
-  #  s = socket.socket()
-  #  try:
-  #    s.connect(Address)
-  #  except Exception, e:
-  
-  init_LSM303D()
-
-  print "The server is not running"
-  
-  global rotary_counters, lock_rotary, encoder_reading, magnetic_heading_LSM303, route_counter, ext_var, prev_stat, stat
-
-  total_count = [0,0,0,0]
-  new_counter = [0,0,0,0]
-
-  cntSpeed = 0 
-
-  init()                              # Init interrupts, GPIO, ...
+  try:  
 
 
-  # create parser
-  parser = argparse.ArgumentParser(description="QR serial")
-  # add expected arguments
-  parser.add_argument('--port', dest='port', required=True)
-  parser.add_argument('-ext_var', dest='ext_var', required=False)
+    #  camqr()
 
-  # parse args
-  args = parser.parse_args()
-  
-  #strPort = '/dev/tty.usbserial-A7006Yqh'
-  #strPort = 'COM8'
-  strPort = args.port
-  ext_var = args.ext_var
+    #  Address=("127.0.0.1",5000)
+    #  s = socket.socket()
+    #  try:
+    #    s.connect(Address)
+    #  except Exception, e:
+    
+    init_LSM303D()
 
+    print "The server is not running"
+    
+    global rotary_counters, lock_rotary, encoder_reading, magnetic_heading_LSM303, route_counter, ext_var, prev_stat, stat, prev_time, current_time
 
-  ser = serial.Serial(strPort, 115200)
-  printx = 0
-  cnt = 1
-  velX = 0
-  posX = 0
-  totvelX = 0
-  totposX = 0
-  velY = 0
-  calib = 0
-  totcalib = 0
-  calibcnt = 100
-  dt = .05  
+    total_count = [0,0,0,0]
+    new_counter = [0,0,0,0]
 
-  A = 0
-  B = 1
-  C = 2
-  D = 3
-  E = 4
-  F = 5
-  G = 6
+    cntSpeed = 0 
 
-  # A X - -
-  # - X - -
-  # - X X X
-  # - - - -
-  
-
-  route  = (A,0),(A,1),(B,1),(C,1),(C,2),(C,3)
-  routelen = 5
-
-  print route
-  print 
+    init()                              # Init interrupts, GPIO, ...
 
 
+    # create parser
+    parser = argparse.ArgumentParser(description="QR serial")
+    # add expected arguments
+    parser.add_argument('--port', dest='port', required=True)
+    parser.add_argument('-ext_var', dest='ext_var', required=False)
+
+    # parse args
+    args = parser.parse_args()
+    
+    #strPort = '/dev/tty.usbserial-A7006Yqh'
+    #strPort = 'COM8'
+    strPort = args.port
+    ext_var = args.ext_var
 
 
-  print('reading from serial port %s...' % strPort),
-  print('            plotting data...')
+    ser = serial.Serial(strPort, 115200)
+    printx = 0
+    cnt = 1
+    velX = 0
+    posX = 0
+    totvelX = 0
+    totposX = 0
+    velY = 0
+    calib = 0
+    totcalib = 0
+    calibcnt = 100
+    dt = .05  
 
-  
-  frameCnt = 0
-  while True:
-    prev_stat = stat
-    stat = os.stat("image.jpg").st_mtime
-    if (stat != prev_stat):
-      print "----------------------------------------------------------------------------------------------------------------------------"
-      camqr()
+    A = 0
+    B = 1
+    C = 2
+    D = 3
+    E = 4
+    F = 5
+    G = 6
+
+    # A X - -
+    # - X - -
+    # - X X X
+    # - - - -
+    
+
+    route  = (A,0),(A,1),(B,1),(C,1),(C,2),(C,3)
+    routelen = 5
+
+    print route
+    print 
 
 
-    if route_counter < routelen:
-        drive(route[route_counter][0],route[route_counter+1][0], route[route_counter][1],route[route_counter+1][1])
-        ser.write(encoderfeedback())
 
-    try:
-      line = ser.readline()
-      #print "line: ",
-      #print line,
-      
-      data = [float(val) for val in line.split()]
-      # print data
-      
-      
-      if(len(data) == 10):
-        #magnetic_heading = data[8]
-        #print "MAG"
-        #print magnetic_heading
-        #print data[8]
-        #print data[0]
-        dt = data[9]
-        accXcurr = data[0]- calib
-        totvelX += accXcurr*dt
-        if (cnt < calibcnt):
-          totcalib += accXcurr
-          calib = totcalib/cnt
-        #velX = totvelX/cnt
-        velX += accXcurr*dt
-        totposX += velX*dt
-        #posX = totposX/cnt
-        posX += velX*dt
-        velY += data[1]/cnt 
-        if printx:
-          print('X\'\' %s' % accXcurr)
-          print('X\'  %s' % velX)
-          print('X   %s' % posX)
-          print(' ')
-        cnt += 1
-    except ValueError:
-        print('Not a float')
+
+    print('reading from serial port %s...' % strPort),
+    print('            plotting data...')
+
+    
+    frameCnt = 0
+    while True:
+      prev_stat = stat
+      stat = os.stat("image.jpg").st_mtime
+      if (stat != prev_stat):
+        print "----------------------------------------------------------------------------------------------------------------------------"
+        camqr()
+
+
+      if route_counter < routelen:
+          drive(route[route_counter][0],route[route_counter+1][0], route[route_counter][1],route[route_counter+1][1])
+          ser.write(encoderfeedback())
+
+      try:
+        line = ser.readline()
+        #print "line: ",
+        #print line,
         
-    except KeyboardInterrupt:
-        ser.write("0 0 0 0\r")
-        raise SystemExit
+        data = [float(val) for val in line.split()]
+        # print data
+        
+        
+        if(len(data) == 10):
+          #magnetic_heading = data[8]
+          #print "MAG"
+          #print magnetic_heading
+          #print data[8]
+          #print data[0]
+          dt = data[9]
+          accXcurr = data[0]- calib
+          totvelX += accXcurr*dt
+          if (cnt < calibcnt):
+            totcalib += accXcurr
+            calib = totcalib/cnt
+          #velX = totvelX/cnt
+          velX += accXcurr*dt
+          totposX += velX*dt
+          #posX = totposX/cnt
+          posX += velX*dt
+          velY += data[1]/cnt 
+          if printx:
+            print('X\'\' %s' % accXcurr)
+            print('X\'  %s' % velX)
+            print('X   %s' % posX)
+            print(' ')
+          cnt += 1
+      except ValueError:
+          print('Not a float')
+          
+      except KeyboardInterrupt:
+          ser.write("0 0 0 0\r")
+          GPIO.cleanup() # this ensures a clean exit
+          raise SystemExit
 
-    read_LSM303D() #read data from second acc and mag
+      read_LSM303D() #read data from second acc and mag
 
-    #    sleep(0.1)                        # sleep 100 msec
-    cntSpeed = cntSpeed +1
-                                  # because of threading make sure no thread
-                                  # changes value until we get them
-                                  # and reset them
-    for x_wheel in xrange(4):                              
-      lock_rotary[x_wheel].acquire()               # get lock for rotary switch
-      new_counter[x_wheel] = rotary_counters[x_wheel]      # get counter value
-      rotary_counters[x_wheel] = 0                 # RESET IT TO 0
-      lock_rotary[x_wheel].release()               # and release lock
-               
-      if (new_counter[x_wheel] !=0):               # Counter has CHANGED
-         total_count[x_wheel] = total_count[x_wheel] + new_counter[x_wheel]
+      #    sleep(0.1)                        # sleep 100 msec
+      cntSpeed = cntSpeed +1
+                                    # because of threading make sure no thread
+                                    # changes value until we get them
+                                    # and reset them
+      for x_wheel in xrange(4):                              
+        lock_rotary[x_wheel].acquire()               # get lock for rotary switch
+        new_counter[x_wheel] = rotary_counters[x_wheel]      # get counter value
+        rotary_counters[x_wheel] = 0                 # RESET IT TO 0
+        lock_rotary[x_wheel].release()               # and release lock
+                 
+        if (new_counter[x_wheel] !=0):               # Counter has CHANGED
+           total_count[x_wheel] = total_count[x_wheel] + new_counter[x_wheel]
       
-    if (cntSpeed > 10):
-      for x_wheel in xrange(4):
-        encoder_reading[x_wheel] = (total_count[x_wheel]/cntSpeed)
-      print "enc:   " + str(int(encoder_reading[left_front]*100)) + " " + str(int(encoder_reading[right_front]*100)) + " " + str(int(encoder_reading[left_back]*100)) + " " + str(int(encoder_reading[right_back]*100))
-      cntSpeed = total_count[0] = total_count[1] = total_count[2] = total_count[3] = 0
+      prev_time = current_time
+      current_time = datetime.now()
+      if (current_time.microsecond - prev_time.microsecond > 24000):
+        print "delta time"
+        print current_time.microsecond - prev_time.microsecond
+        for x_wheel in xrange(4):
+          encoder_reading[x_wheel] = ((total_count[x_wheel]/cntSpeed)*5)
+        #print "enc:   " + str(int(encoder_reading[left_front]*100)) + " " + str(int(encoder_reading[right_front]*100)) + " " + str(int(encoder_reading[left_back]*100)) + " " + str(int(encoder_reading[right_back]*100))
+        print "enc:   " + str(encoder_reading[left_front]) + " " + str(encoder_reading[right_front]) + " " + str(encoder_reading[left_back]) + " " + str(encoder_reading[right_back])
+        cntSpeed = total_count[0] = total_count[1] = total_count[2] = total_count[3] = 0
 
-  print('exiting.')
+    print('exiting.')
+  except KeyboardInterrupt:  
+      # here you put any code you want to run before the program   
+      # exits when you press CTRL+C  
+      print "exiting cleanly============================================="
+        
+  finally:  
+      GPIO.cleanup() # this ensures a clean exit
 
 # call main
 if __name__ == '__main__':
