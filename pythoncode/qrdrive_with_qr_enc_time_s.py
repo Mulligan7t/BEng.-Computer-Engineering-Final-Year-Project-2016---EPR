@@ -16,6 +16,11 @@ import threading
 import math
 from smbus import SMBus
 
+foward_drive = 0
+drive_start_time = datetime.now()
+waypoint_time = 1000
+has_done_first_heading_check = 0
+
 busNum = 1
 b = SMBus(busNum)
 LSM = 0x1d
@@ -78,7 +83,7 @@ current_B = [0,0,0,0]
 WHEEL_RADIUS=30
 WHEEL_SEPARATION_WIDTH = 93
 WHEEL_SEPARATION_LENGTH = 90
-linearX = -2000                       #Forward (+ to the front)
+linearX = 2000                       #Forward (+ to the front)
 linearY = 000                      #Sideways (+ to the left)
 angularZ = 0 
 
@@ -111,96 +116,89 @@ prev_time = datetime.now()
 current_time = datetime.now()
 
 def drive(coY0, coY1, coX0, coX1):
-  global motor_setpoint, magnetic_heading_LSM303, ext_var,route_counter
-
+  global motor_setpoint, magnetic_heading_LSM303, ext_var,route_counter, foward_drive, drive_start_time,waypoint_time, has_done_first_heading_check
+  print "Entered Drive"
   coXdiff = coX1-coX0
   coYdiff = coY1-coY0
   #print coXdiff
   #print coYdiff
 
-  #  linearX = coXdiff*scaling_factor
-  #  linearY = coYdiff*scaling_factor
-  #  angularZ = 0
-
   if ext_var is None:
-    desired_heading = 90.0 - math.degrees(math.atan2(coYdiff,coXdiff))
+    desired_heading = 90.0 + math.degrees(math.atan2(coYdiff,coXdiff))
     if(desired_heading< 0):
       desired_heading= desired_heading+ 360    
   else:
     desired_heading = int(ext_var)
-  
 
-  # if(desired_heading>180):
-  #   desired_heading = desired_heading - 360
-
-  #print "ORIG:       ", magnetic_heading_LSM303
   magnetic_heading_LSM303_360 = magnetic_heading_LSM303
-  
-  # if(magnetic_heading_LSM303>180):
-  #   magnetic_heading_LSM303_360 = magnetic_heading_LSM303 - 360
+  print "current heading: " + str(magnetic_heading_LSM303_360)
+  print "route counter   ", route_counter
 
   heading_adjustment = magnetic_heading_LSM303_360 - desired_heading
-  
-  if (math.fabs(heading_adjustment) < 1):
-    heading_adjustment = 0
-    #route_counter = route_counter + 1 #move to next qr code because robot is facing correct direction
-    print "route counter   ", route_counter
-
   if (heading_adjustment>180):
     heading_adjustment = heading_adjustment - 360
-
-  #print "adj_head = mag_head_LSM - desired_heading"
-  #print heading_adjustment, " = " , magnetic_heading_LSM303_360, " - " , desired_heading
-
-  accuracy = 1
-  left_dir = right_dir = 0 #stop all
-
-  if(math.fabs(heading_adjustment)<=accuracy):
-      left_dir = right_dir = 0 #stop all
-      #print "first"
-  elif (heading_adjustment<accuracy):
-    left_dir = 1*math.fabs(heading_adjustment)/100
-    right_dir = -1*math.fabs(heading_adjustment)/100
-    #print "second"
-  elif(heading_adjustment>accuracy):
-    left_dir = -1*math.fabs(heading_adjustment)/100
-    right_dir = 1*math.fabs(heading_adjustment)/100
-    #print "third"
+  if ( ((math.fabs(heading_adjustment) < 2) and has_done_first_heading_check == 1 ) or foward_drive ==1 ):
+    print "foward code"
+    if (foward_drive == 0 ):
+      drive_start_time = datetime.now()
+      foward_drive = 1
+      print "Turn on drive"
     
-  motor_setpoint[left_front] = 255 * left_dir
-  motor_setpoint[left_back] = 255 * left_dir
+    angularZ = 0  
+    print "abs heading_adjustment : " +str(math.fabs(heading_adjustment))
+    if ( math.fabs(heading_adjustment) > 2 ):
+      angularZ = math.radians(heading_adjustment)
 
-
-  motor_setpoint[right_front] = 255 * right_dir
-  motor_setpoint[right_back] = 255 * right_dir
-
-
-  print "heading adj--------------------------------------------------"
-  print heading_adjustment
-  angularZ = math.radians(heading_adjustment)
-  print "current heading: "
-  print magnetic_heading_LSM303_360 
-
-  if(False):
-    linearX = 0
-    linearY = 0 #next
-    angularZ = 0
-    print "heading adj--------------------------------------------------"
-    print heading_adjustment
-    angularZ = math.radians(heading_adjustment)
-    print "current heading: "
-    print magnetic_heading_LSM303_360
+    print "angularZ : "+ str(angularZ)
     motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
     motor_setpoint[right_front] = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
     motor_setpoint[left_back] = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
     motor_setpoint[right_back] = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+    
+    if (foward_drive == 1):
+      current_drive_time = datetime.now()
+      drive_time_dif = current_drive_time - drive_start_time
+      drive_time_dif = (drive_time_dif.days * 24 * 60 * 60 + drive_time_dif.seconds) * 1000 + drive_time_dif.microseconds / 1000.0
+      print "drive time dif : "+str(drive_time_dif)
+      if ( drive_time_dif > waypoint_time ):
+        print "update route counter"
+        route_counter = route_counter + 1 #move to next qr code because robot is facing correct direction
+        foward_drive = 0
+        motor_setpoint[left_front] = 0
+        motor_setpoint[left_back] = 0
+        motor_setpoint[right_front] = 0
+        motor_setpoint[right_back] = 0
+  
+  else:
+    print "Turn code"
+    has_done_first_heading_check = 1
+    accuracy = 2
+    left_dir = right_dir = 0 #stop all
 
-  if (False):
-    all_dir = 1
-    motor_setpoint[left_front] = 255 * all_dir
-    motor_setpoint[right_front] = 255 * all_dir
-    motor_setpoint[left_back] = 255 * all_dir
-    motor_setpoint[right_back] = 255 * all_dir
+    if(math.fabs(heading_adjustment)<=accuracy):
+        left_dir = right_dir = 0 #stop all
+        print "first"
+    elif (heading_adjustment<accuracy):
+      left_dir = 1*math.fabs(heading_adjustment)/100
+      right_dir = -1*math.fabs(heading_adjustment)/100
+      #print "second"
+    elif(heading_adjustment>accuracy):
+      left_dir = -1*math.fabs(heading_adjustment)/100
+      right_dir = 1*math.fabs(heading_adjustment)/100
+      #print "third"
+    print "left dir " + str(left_dir) + "  right dir "+str(right_dir)
+    if (left_dir != 0.00 and route_counter== 0 and math.fabs(left_dir) < 0.05 ) :
+      left_dir = 10 * left_dir
+    if (right_dir!= 0.00 and route_counter== 0 and math.fabs(right_dir) < 0.05) :
+      right_dir = 10 * right_dir
+
+    motor_setpoint[left_front] = 255 * left_dir
+    motor_setpoint[left_back] = 255 * left_dir
+    motor_setpoint[right_front] = 255 * right_dir
+    motor_setpoint[right_back] = 255 * right_dir
+
+    print "heading adj = " + str(heading_adjustment)
+    angularZ = math.radians(heading_adjustment)
 
   encoderRate = 9
 
@@ -209,8 +207,10 @@ def drive(coY0, coY1, coX0, coX1):
     motor_setpoint[x_wheel] = motor_setpoint[x_wheel]//encoderRate
     if(math.fabs(motor_setpoint[x_wheel])<=1):
       motor_setpoint[x_wheel] = 0
-
   print "SET:   " + str(motor_setpoint[left_front]) + " " + str(motor_setpoint[right_front]) + " " + str(motor_setpoint[left_back]) + " " + str(motor_setpoint[right_back]) + "\r"
+  print "Exit Drive"
+
+ # print "SET:   " + str(motor_setpoint[left_front]) + " " + str(motor_setpoint[right_front]) + " " + str(motor_setpoint[left_back]) + " " + str(motor_setpoint[right_back]) + "\r"
 
 def encoderfeedback():
   global PWMoutput, integral_error, prev_error
@@ -241,10 +241,10 @@ def encoderfeedback():
     #print "encoder_reading[x_wheel]: " + str(encoder_reading[x_wheel]),
     #print "  integral_error[x_wheel]: " + str(integral_error[x_wheel]),
     #print "  derivative_error[x_wheel]: " + str(derivative_error[x_wheel])
-  print "encoder_reading[left_front]: " + str(encoder_reading[left_front]),
-  print "  current_error[left_front]: " + str(current_error[left_front]),
-  print "  integral_error[left_front]: " + str(integral_error[left_front]),
-  print "  derivative_error[left_front]: " + str(derivative_error[left_front])
+#  print "encoder_reading[left_front]: " + str(encoder_reading[left_front]),
+#  print "  current_error[left_front]: " + str(current_error[left_front]),
+#  print "  integral_error[left_front]: " + str(integral_error[left_front]),
+#  print "  derivative_error[left_front]: " + str(derivative_error[left_front])
         
   for x_wheel in xrange(4):  
     if(encoder_reading[x_wheel]==0 and math.fabs(motor_setpoint[x_wheel]) > 0):
@@ -267,16 +267,17 @@ def encoderfeedback():
       PWMoutput[x_wheel] = math.copysign(254, motor_setpoint[x_wheel]) # return value of 254 with the sign of motor_setpoint[x_wheel]
     
     if(encoder_reading[x_wheel] ==0 and math.fabs(motor_setpoint[x_wheel]) <= 1 or motor_setpoint[x_wheel] == 0):
-      motor_setpoint[x_wheel] = 0
+      #motor_setpoint[x_wheel] = 0
       PWMoutput[x_wheel] = 0
+      print "int set 0 motor"
   print
 
 
   #PWMoutput[left_front] = PWMoutput[right_front] = PWMoutput[left_back] = PWMoutput[right_back] = 254
-  print "encoder  "+ str(encoder_reading[0])+ " " + str(encoder_reading[1])+" " + str(encoder_reading[2])+ " " +str(encoder_reading[3])
+#  print "encoder  "+ str(encoder_reading[0])+ " " + str(encoder_reading[1])+" " + str(encoder_reading[2])+ " " +str(encoder_reading[3])
   
   
-  print "PWM:   " + str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
+#  print "PWM:   " + str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
   return str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
 
 def camqr():
@@ -606,14 +607,17 @@ def main():
     F = 5
     G = 6
 
-    # A X - -
-    # - X - -
-    # - X X X
-    # - - - -
+    # A X -
+    # - X -
+    # - X X
+    # - - -
     
 
-    route  = (A,0),(A,1),(B,1),(C,1),(C,2),(C,3)
-    routelen = 5
+    #route  = (A,0),(A,1),(B,1),(C,1),(C,2)
+    #routelen = 4
+
+    route  = (A,0),(B,0),(C,0),(C,1),(C,2)
+    routelen = 4
 
     print route
     print 
@@ -698,12 +702,12 @@ def main():
       prev_time = current_time
       current_time = datetime.now()
       if (current_time.microsecond - prev_time.microsecond > 24000):
-        print "delta time"
-        print current_time.microsecond - prev_time.microsecond
+        #print "delta time"
+        #print current_time.microsecond - prev_time.microsecond
         for x_wheel in xrange(4):
           encoder_reading[x_wheel] = ((total_count[x_wheel]/cntSpeed)*5)
         #print "enc:   " + str(int(encoder_reading[left_front]*100)) + " " + str(int(encoder_reading[right_front]*100)) + " " + str(int(encoder_reading[left_back]*100)) + " " + str(int(encoder_reading[right_back]*100))
-        print "enc:   " + str(encoder_reading[left_front]) + " " + str(encoder_reading[right_front]) + " " + str(encoder_reading[left_back]) + " " + str(encoder_reading[right_back])
+        #print "enc:   " + str(encoder_reading[left_front]) + " " + str(encoder_reading[right_front]) + " " + str(encoder_reading[left_back]) + " " + str(encoder_reading[right_back])
         cntSpeed = total_count[0] = total_count[1] = total_count[2] = total_count[3] = 0
 
     print('exiting.')
