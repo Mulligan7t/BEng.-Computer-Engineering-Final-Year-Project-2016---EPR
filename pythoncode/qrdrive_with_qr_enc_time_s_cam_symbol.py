@@ -84,7 +84,6 @@ WHEEL_RADIUS=30
 WHEEL_SEPARATION_WIDTH = 93
 WHEEL_SEPARATION_LENGTH = 90
 linearX = 250                       #Forward (+ to the front)
-linearX = 2000                       #Forward (+ to the front)
 linearY = 0                      #Sideways (+ to the left)
 angularZ = 0 
 
@@ -118,11 +117,6 @@ current_time = datetime.now()
 
 image_prev_time = datetime.now()
 
-camera = picamera.PiCamera()
-camera.resolution = (500, 500)
-camera.exposure_mode = 'sports'
-
-
 def drive(coY0, coY1, coX0, coX1):
   global motor_setpoint, magnetic_heading_LSM303, ext_var,route_counter, foward_drive, drive_start_time,waypoint_time, has_done_first_heading_check
   print "Entered Drive"
@@ -155,7 +149,7 @@ def drive(coY0, coY1, coX0, coX1):
     angularZ = 0  
     print "abs heading_adjustment : " +str(math.fabs(heading_adjustment))
     if ( math.fabs(heading_adjustment) > 2 ):
-      angularZ = math.radians(heading_adjustment)*.01
+      angularZ = math.radians(heading_adjustment)
 
     print "angularZ : "+ str(angularZ)
     motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
@@ -164,13 +158,7 @@ def drive(coY0, coY1, coX0, coX1):
     motor_setpoint[right_back] = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
     
     if (foward_drive == 1):
-      time.sleep(0.2)
-      ser.write("0 0 0 0\r")
-      camera.capture('image.jpg')
-      camqr()
-      print "----------------------------------------------------------------------------------------------------------------------------"
-
-      if (proc==True):
+      if (  ):
         print "update route counter"
         route_counter = route_counter + 1 #move to next qr code because robot is facing correct direction
         foward_drive = 0
@@ -580,7 +568,7 @@ def main():
 
     print "The server is not running"
     
-    global rotary_counters, lock_rotary, encoder_reading, magnetic_heading_LSM303, route_counter, ext_var, prev_stat, stat, prev_time, current_time,image_prev_time, proc, ser
+    global rotary_counters, lock_rotary, encoder_reading, magnetic_heading_LSM303, route_counter, ext_var, prev_stat, stat, prev_time, current_time,image_prev_time
     
 
     total_count = [0,0,0,0]
@@ -648,9 +636,9 @@ def main():
     print('reading from serial port %s...' % strPort),
     print('            plotting data...')
 
-    # camera = picamera.PiCamera()
-    # camera.resolution = (500, 500)
-    # camera.exposure_mode = 'sports'
+    camera = picamera.PiCamera()
+    camera.resolution = (500, 500)
+    camera.exposure_mode = 'sports'
     frameCnt = 0
     proc = False
 
@@ -664,15 +652,15 @@ def main():
       time_dif = image_current_time - image_prev_time
       time_dif = (time_dif.days * 24 * 60 * 60 + time_dif.seconds) * 1000 + time_dif.microseconds / 1000.0
      
-      # if(proc):
-      #   camqr()
-      #   print "----------------------------------------------------------------------------------------------------------------------------"
-      #   proc = False
+      if(proc):
+        camqr()
+        print "----------------------------------------------------------------------------------------------------------------------------"
+        proc = False
 
-      # if(time_dif >= 1000):
-      #   image_prev_time = image_current_time
-      #   camera.capture('image.jpg')
-      #   proc = True  
+      if(time_dif >= 1000):
+        image_prev_time = image_current_time
+        camera.capture('image.jpg')
+        proc = True  
 
 
 
