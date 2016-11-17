@@ -18,7 +18,7 @@ from smbus import SMBus
 
 foward_drive = 0
 drive_start_time = datetime.now()
-waypoint_time = 1000
+waypoint_time = 1500
 has_done_first_heading_check = 0
 
 busNum = 1
@@ -611,16 +611,34 @@ def main():
     # - X -
     # - X X
     # - - -
-    
-
-    #route  = (A,0),(A,1),(B,1),(C,1),(C,2)
-    #routelen = 4
 
     route  = (A,0),(B,0),(C,0),(C,1),(C,2)
     routelen = 4
 
+
+    route  = (A,0),(A,1),(B,1),(C,1),(C,2)
+    routelen = 4
+
+    route  = (C,0),(C,1),(B,1),(C,1),(C,2)
+    routelen = 4
+
+    route  = (B,1),(C,1),(C,2),(A,2),(A,1), (A,0)
+    routelen = 5
+
+
+    route  = (A,2),(B,1),(C,0),(C,1),(C,2), (B,2)
+    routelen = 5
+    
+    route  = (A,2),(A,1),(B,1),(C,1),(C,2), (B,2)
+    routelen = 5
+
+#    route  = (A,2),(A,1),(A,0),(B,0),(C,0),(C,1),(C,2),(B,2),(A,2)
+#    routelen = 8    
     print route
     print 
+
+
+
 
 
 
@@ -631,11 +649,11 @@ def main():
     
     frameCnt = 0
     while True:
-      prev_stat = stat
-      stat = os.stat("image.jpg").st_mtime
-      if (stat != prev_stat):
-        print "----------------------------------------------------------------------------------------------------------------------------"
-        camqr()
+      # prev_stat = stat
+      # stat = os.stat("image.jpg").st_mtime
+      # if (stat != prev_stat):
+      #   print "----------------------------------------------------------------------------------------------------------------------------"
+      #   camqr()
 
 
       if route_counter < routelen:

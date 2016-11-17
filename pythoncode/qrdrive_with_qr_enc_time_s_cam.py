@@ -158,10 +158,10 @@ def drive(coY0, coY1, coX0, coX1):
       angularZ = math.radians(heading_adjustment)*.01
 
     print "angularZ : "+ str(angularZ)
-    motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-    motor_setpoint[right_front] = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-    motor_setpoint[left_back] = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-    motor_setpoint[right_back] = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+    motor_setpoint[left_front] =    (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+    motor_setpoint[right_front] =   (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+    motor_setpoint[left_back] =     (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+    motor_setpoint[right_back] =    (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
     
     if (foward_drive == 1):
       time.sleep(0.2)
@@ -217,6 +217,10 @@ def drive(coY0, coY1, coX0, coX1):
     motor_setpoint[x_wheel] = motor_setpoint[x_wheel]//encoderRate
     if(math.fabs(motor_setpoint[x_wheel])<=1):
       motor_setpoint[x_wheel] = 0
+
+  motor_setpoint[0] = motor_setpoint[1] = motor_setpoint[2] = motor_setpoint[3] = 0
+
+
   print "SET:   " + str(motor_setpoint[left_front]) + " " + str(motor_setpoint[right_front]) + " " + str(motor_setpoint[left_back]) + " " + str(motor_setpoint[right_back]) + "\r"
   print "Exit Drive"
 
@@ -298,6 +302,7 @@ def convert_Image_symbol(symbol_code):
 
 
 def camqr():
+  global win
   if len(argv) < 2: exit(1)
 
   # create a reader
@@ -332,36 +337,70 @@ def camqr():
     del(image)
 
     if(True):
-      win = GraphWin('qr', 500, 500)
-      pt = Circle(Point(barloc[0][0],barloc[0][1]),20)
-      pt.draw(win)
-      pt = Circle(Point(barloc[1][0],barloc[1][1]),5)
-      pt.draw(win) 
-      i = 0
-      while (i<3):
-          line = Line(Point(barloc[i][0],barloc[i][1]), Point(barloc[i+1][0], barloc[i+1][1]))
-          line.draw(win)
-          i = i + 1
-      line = Line(Point(barloc[i][0],barloc[i][1]), Point(barloc[0][0], barloc[0][1]))
-      line.draw(win)
-      sqrt =((barloc[0][0] - barloc[2][0])**2 + (barloc[0][1] - barloc[2][1])**2)**0.5
-      a =float(barloc[0][0] - barloc[2][0])
-      b =float(barloc[0][1] - barloc[2][1])
-      a = a / sqrt
-      b = b / sqrt
-      print sqrt
-      print a
-      print b
+      try:
+        aRectangle = Rectangle(Point(0,0), Point(500,500))
+        aRectangle.setFill('white')
+        aRectangle.draw(win)
 
-      a = a * 100
-      b = b * 100
-      c = 250
+        
 
-      line = Line(Point(c,c), Point(c+a,c+b))
-      line.draw(win)
+        message = Text(Point(250,10), symbol_X)
+        message.draw(win)
+        message = Text(Point(270,10), symbol_Y)
+        message.draw(win)
 
-      #win.getMouse() #pause for click in window
 
+        i = 0
+        while (i<3):
+            line = Line(Point(barloc[i][0],barloc[i][1]), Point(barloc[i+1][0], barloc[i+1][1]))
+            line.draw(win)
+            i = i + 1
+        line = Line(Point(barloc[i][0],barloc[i][1]), Point(barloc[0][0], barloc[0][1]))
+        line.draw(win)
+
+        pt = Circle(Point(barloc[0][0],barloc[0][1]),20)
+        pt.setFill('black')
+        pt.setOutline('black')
+        pt.draw(win)
+        pt = Circle(Point(barloc[1][0],barloc[1][1]),5)
+        pt.setFill('grey')
+        pt.setOutline('grey')
+        pt.draw(win) 
+        pt = Circle(Point(barloc[3][0],barloc[3][1]),5)
+        pt.setFill('grey')
+        pt.setOutline('grey')
+        pt.draw(win)  
+
+        x_center = float(barloc[0][0]+barloc[1][0]+barloc[2][0]+barloc[3][0])/4
+        y_center = float(barloc[0][1]+barloc[1][1]+barloc[2][1]+barloc[3][1])/4
+
+        pt = Circle(Point(x_center,y_center),5)
+        pt.setOutline('blue')
+        pt.setFill('blue')
+        pt.draw(win) 
+
+        x_dir = float(barloc[0][0]+barloc[3][0])/2
+        y_dir = float(barloc[0][1]+barloc[3][1])/2
+
+
+        line = Line(Point(x_center,y_center), Point(x_dir,y_dir))
+        line.setWidth(3)
+        line.setFill('blue')
+        line.draw(win)
+
+        pt = Circle(Point(x_dir,y_dir),3)
+        pt.setFill('red')
+        pt.setOutline('red')
+        pt.draw(win) 
+
+        qr_angle = math.degrees(math.atan2(y_center - y_dir, x_center - x_dir))-90
+        print "qr angle: ", qr_angle
+
+        #win.getMouse() #pause for click in window
+
+      except:
+        win = GraphWin('qr', 500, 500) 
+      
   except Exception, e:
     print "Exception: ", e
   else:

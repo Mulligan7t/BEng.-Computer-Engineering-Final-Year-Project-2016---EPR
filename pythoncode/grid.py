@@ -1,8 +1,8 @@
 import Tkinter as tk
 import socket, time,os, random
 # Set number of rows and columns
-ROWS = 5
-COLS = 5
+ROWS = 3
+COLS = 3
 global route
 route= []
 s = socket.socket()
@@ -29,8 +29,8 @@ def callback(event):
     else:
         c.delete(tiles[row][col])
         tiles[row][col] = None
-    nu = 65 + col
-    print str(unichr(nu)) + " " + str(row) 
+    nu = 65 + row
+    print str(unichr(nu)) + " " + str(col) 
     setroute(col,row)
 
 def setroute (a, b):
@@ -48,10 +48,11 @@ def WaitForConnection():
 
 
 root = tk.Tk()
-c = tk.Canvas(root, width=COLS*100, height=ROWS*100, borderwidth=5, background='white')
+c = tk.Canvas(root, width=COLS*200, height=ROWS*200, borderwidth=5, background='white')
 c.pack()
 c.bind("<Button-1>", callback)
 
+root.title("Select a route")
 root.mainloop()
 
 print "Waiting for Client"

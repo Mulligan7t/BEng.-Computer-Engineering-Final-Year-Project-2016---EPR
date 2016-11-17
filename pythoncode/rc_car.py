@@ -115,7 +115,7 @@ def drive(x_, y_,rot_):
   linearY = y_
   angularZ = rot_
 
-
+  linearX = int(ext_var)
 
   motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
   motor_setpoint[right_front] = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
@@ -517,18 +517,24 @@ def main():
 
   
   frameCnt = 0
+  routelen = 99
+  print "fjdaklfdjsa;kdf"
+
   while True:
 
     x_rate = 0
     y_rate = 0
-    rot_rate = 0 
+    rot_rate = 0
+    print route_counter
+
+
     if route_counter < routelen:
         drive(x_rate, y_rate, rot_rate)
         ser.write(encoderfeedback())
 
     try:
       line = ser.readline()
-
+      print "testg"
 
 
       for line in sys.stdin:

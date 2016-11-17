@@ -818,10 +818,10 @@ class IMAGE(GraphicsObject):
         self.imageId = IMAGE.idCount
         IMAGE.idCount = IMAGE.idCount + 1
         if len(pixmap) == 1: # file name provided
-            self.img = tk.PhotoIMAGE(file=pixmap[0], master=_root)
+            self.img = tk.PhotoImage(file=pixmap[0], master=_root)
         else: # width and height provided
             width, height = pixmap
-            self.img = tk.PhotoIMAGE(master=_root, width=width, height=height)
+            self.img = tk.PhotoImage(master=_root, width=width, height=height)
                 
     def _draw(self, canvas, options):
         p = self.anchor
