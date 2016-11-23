@@ -6,8 +6,8 @@ import threading
 import Tkinter as tk
 import socket, time,os, random
 # Set number of rows and columns
-ROWS = 3
-COLS = 3
+ROWS = 4
+COLS = 4
 global route
 route= ""
 routelist= []

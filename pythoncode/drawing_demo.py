@@ -343,7 +343,10 @@ def camqr():
         qrImage = IMAGE(Point(250,250), "image.gif")
         qrImage.draw(win)
 
-        message = Text(Point(250,10), symbol_X)
+
+
+        symbol_X_letter = chr(symbol_X_letter + 65)
+        message = Text(Point(250,10), symbol_X_letter)
         message.draw(win)
         message = Text(Point(270,10), symbol_Y)
         message.draw(win)

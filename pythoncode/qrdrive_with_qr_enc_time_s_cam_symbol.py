@@ -595,7 +595,7 @@ def main():
 
 
     ser = serial.Serial(strPort, 115200)
-    printx = 0
+    printx = 1
     cnt = 1
     velX = 0
     posX = 0

@@ -521,7 +521,7 @@ def read_LSM303D():
   #print "magy", magy
   magnetic_heading_LSM303 = math.atan2(magy,magx)
 
-  declinationAngle =  0 - math.radians(150) #150
+  declinationAngle =  0 - math.radians(6) #150
   magnetic_heading_LSM303 += declinationAngle
   
   # Correct for when signs are reversed.

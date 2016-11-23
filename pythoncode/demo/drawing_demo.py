@@ -121,6 +121,10 @@ camera = picamera.PiCamera()
 camera.resolution = (500, 500)
 camera.exposure_mode = 'sports'
 
+qr_angle = 999999.9
+qr_angle_of_robot = 999999.9
+
+
 
 def drive(coY0, coY1, coX0, coX1):
   global motor_setpoint, magnetic_heading_LSM303, ext_var,route_counter, foward_drive, drive_start_time,waypoint_time, has_done_first_heading_check
@@ -301,7 +305,8 @@ def convert_Image_symbol(symbol_code):
 
 
 def camqr():
-  global win
+  global win, qr_angle, qr_angle_of_robot
+
 
   # create a reader
   scanner = zbar.ImageScanner()
@@ -336,16 +341,33 @@ def camqr():
 
     if(True):
       try:
-        # aRectangle = Rectangle(Point(0,0), Point(500,500))
-        # aRectangle.setFill('white')
-        # aRectangle.draw(win)
 
         qrImage = IMAGE(Point(250,250), "image.gif")
         qrImage.draw(win)
 
-        message = Text(Point(250,10), symbol_X)
+        
+        aRectangle = Rectangle(Point(0,500), Point(500,580))
+        aRectangle.setFill('white')
+        aRectangle.draw(win)
+
+        symbol_X_letter = chr(symbol_X + 65)
+        message = Text(Point(250,510), symbol_X_letter)
         message.draw(win)
-        message = Text(Point(270,10), symbol_Y)
+        message = Text(Point(270,510), symbol_Y)
+        message.draw(win)
+
+
+        message = Text(Point(100,530), "Angle of QR wrt camera")
+        message.draw(win)
+
+        message = Text(Point(260,530), int(qr_angle))
+        message.draw(win)
+
+        message = Text(Point(100,550), "Angle of robot wrt map")
+        message.draw(win)
+
+
+        message = Text(Point(260,550), int(qr_angle_of_robot))
         message.draw(win)
 
 
@@ -404,12 +426,18 @@ def camqr():
         pt.draw(win) 
 
         qr_angle = math.degrees(math.atan2(y_center - y_dir, x_center - x_dir))-90
+        if (qr_angle<0):
+          qr_angle += 360
+
+
+        qr_angle_of_robot = -qr_angle + 360
+
         print "qr angle: ", qr_angle
 
         #win.getMouse() #pause for click in window
 
       except:
-        win = GraphWin('qr', 500, 500) 
+        win = GraphWin('qr', 500, 580) 
       
   except Exception, e:
     print "Exception: ", e
@@ -588,7 +616,7 @@ def read_LSM303D():
   #print "magy", magy
   magnetic_heading_LSM303 = math.atan2(magy,magx)
 
-  declinationAngle =  0 - math.radians(150) #150
+  declinationAngle =  0 - math.radians(6) #150
   magnetic_heading_LSM303 += declinationAngle
   
   # Correct for when signs are reversed.

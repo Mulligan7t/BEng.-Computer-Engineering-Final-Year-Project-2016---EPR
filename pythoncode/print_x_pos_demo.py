@@ -15,12 +15,12 @@ import RPi.GPIO as GPIO
 import threading
 import math
 from smbus import SMBus
+import picamera
 
 foward_drive = 0
-drive_start_time = datetime.now()
-waypoint_time = 1500
 has_done_first_heading_check = 0
-
+symbol_X = -1
+symbol_Y = -1
 busNum = 1
 b = SMBus(busNum)
 LSM = 0x1d
@@ -83,8 +83,8 @@ current_B = [0,0,0,0]
 WHEEL_RADIUS=30
 WHEEL_SEPARATION_WIDTH = 93
 WHEEL_SEPARATION_LENGTH = 90
-linearX = 2000                       #Forward (+ to the front)
-linearY = 000                      #Sideways (+ to the left)
+linearX = 250                       #Forward (+ to the front)
+linearY = 0                      #Sideways (+ to the left)
 angularZ = 0 
 
 speedcalib = 2.55
@@ -109,36 +109,99 @@ magnetic_heading_LSM303 = 0
 
 route_counter = 0 #what position on the route are we on now.
 
-x_var = 0
-y_var = 0
+ext_var = 0
 stat = 0
 prev_stat = 0
 prev_time = datetime.now()
 current_time = datetime.now()
 
+image_prev_time = datetime.now()
+
 def drive(coY0, coY1, coX0, coX1):
-  global motor_setpoint, magnetic_heading_LSM303, x_var,route_counter, foward_drive, drive_start_time,waypoint_time, has_done_first_heading_check
-  print "Entered Drive"
+  global motor_setpoint, magnetic_heading_LSM303, ext_var,route_counter, foward_drive, drive_start_time,waypoint_time, has_done_first_heading_check
+  # print "Entered Drive"
   coXdiff = coX1-coX0
   coYdiff = coY1-coY0
   #print coXdiff
   #print coYdiff
 
-  if x_var is None:
-    linearX =0
+  if ext_var is None:
+    desired_heading = 90.0 + math.degrees(math.atan2(coYdiff,coXdiff))
+    if(desired_heading< 0):
+      desired_heading= desired_heading+ 360    
   else:
-    linearX = int(x_var)
+    desired_heading = int(ext_var)
 
-  if y_var is None:
-    linearY =0
+  magnetic_heading_LSM303_360 = magnetic_heading_LSM303
+  # print "current heading: " + str(magnetic_heading_LSM303_360)
+  # print "route counter   ", route_counter
+
+  heading_adjustment = magnetic_heading_LSM303_360 - desired_heading
+  if (heading_adjustment>180):
+    heading_adjustment = heading_adjustment - 360
+  if ( ((math.fabs(heading_adjustment) < 2) and has_done_first_heading_check == 1 ) or foward_drive ==1 ):
+    print "foward code"
+    if (foward_drive == 0 ):
+      drive_start_time = datetime.now()
+      foward_drive = 1
+      print "Turn on drive"
+    
+    angularZ = 0  
+    print "abs heading_adjustment : " +str(math.fabs(heading_adjustment))
+    if ( math.fabs(heading_adjustment) > 2 ):
+      angularZ = math.radians(heading_adjustment)
+
+    print "angularZ : "+ str(angularZ)
+    motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+    motor_setpoint[right_front] = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+    motor_setpoint[left_back] = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+    motor_setpoint[right_back] = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
+    
+    if (foward_drive == 1):
+      if (  ):
+        print "update route counter"
+        route_counter = route_counter + 1 #move to next qr code because robot is facing correct direction
+        foward_drive = 0
+        motor_setpoint[left_front] = 0
+        motor_setpoint[left_back] = 0
+        motor_setpoint[right_front] = 0
+        motor_setpoint[right_back] = 0
+  
   else:
-    linearY = int(y_var)
-    
-  motor_setpoint[left_front] = (1/WHEEL_RADIUS) * (linearX - linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-  motor_setpoint[right_front] = (1/WHEEL_RADIUS) * (linearX + linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-  motor_setpoint[left_back] = (1/WHEEL_RADIUS) * (linearX + linearY - (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-  motor_setpoint[right_back] = (1/WHEEL_RADIUS) * (linearX - linearY + (WHEEL_SEPARATION_WIDTH + WHEEL_SEPARATION_LENGTH)*angularZ) * speedcalib
-    
+    # print "Turn code"
+    has_done_first_heading_check = 1
+    accuracy = 2
+    left_dir = right_dir = 0 #stop all
+
+    if(math.fabs(heading_adjustment)<=accuracy):
+        left_dir = right_dir = 0 #stop all
+        print "first"
+    elif (heading_adjustment<accuracy):
+      left_dir = 1*math.fabs(heading_adjustment)/100
+      right_dir = -1*math.fabs(heading_adjustment)/100
+      #print "second"
+    elif(heading_adjustment>accuracy):
+      left_dir = -1*math.fabs(heading_adjustment)/100
+      right_dir = 1*math.fabs(heading_adjustment)/100
+      #print "third"
+    # print "left dir " + str(left_dir) + "  right dir "+str(right_dir)
+    if (left_dir != 0.00 and route_counter== 0 and math.fabs(left_dir) < 0.05 ) :
+      left_dir = 10 * left_dir
+    if (right_dir!= 0.00 and route_counter== 0 and math.fabs(right_dir) < 0.05) :
+      right_dir = 10 * right_dir
+
+    motor_setpoint[left_front] = 255 * left_dir
+    motor_setpoint[left_back] = 255 * left_dir
+    motor_setpoint[right_front] = 255 * right_dir
+    motor_setpoint[right_back] = 255 * right_dir
+
+    motor_setpoint[left_front] = 0
+    motor_setpoint[left_back] = 0
+    motor_setpoint[right_front] = 0
+    motor_setpoint[right_back] = 0
+
+    # print "heading adj = " + str(heading_adjustment)
+    angularZ = math.radians(heading_adjustment)
 
   encoderRate = 9
 
@@ -148,7 +211,7 @@ def drive(coY0, coY1, coX0, coX1):
     if(math.fabs(motor_setpoint[x_wheel])<=1):
       motor_setpoint[x_wheel] = 0
   print "SET:   " + str(motor_setpoint[left_front]) + " " + str(motor_setpoint[right_front]) + " " + str(motor_setpoint[left_back]) + " " + str(motor_setpoint[right_back]) + "\r"
-  print "Exit Drive"
+  # print "Exit Drive"
 
  # print "SET:   " + str(motor_setpoint[left_front]) + " " + str(motor_setpoint[right_front]) + " " + str(motor_setpoint[left_back]) + " " + str(motor_setpoint[right_back]) + "\r"
 
@@ -209,7 +272,7 @@ def encoderfeedback():
     if(encoder_reading[x_wheel] ==0 and math.fabs(motor_setpoint[x_wheel]) <= 1 or motor_setpoint[x_wheel] == 0):
       #motor_setpoint[x_wheel] = 0
       PWMoutput[x_wheel] = 0
-      print "int set 0 motor"
+      # print "int set 0 motor"
   print
 
 
@@ -219,6 +282,13 @@ def encoderfeedback():
   
 #  print "PWM:   " + str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
   return str(int(PWMoutput[left_front])) + " " + str(int(PWMoutput[right_front])) + " " + str(int(PWMoutput[left_back])) + " " + str(int(PWMoutput[right_back])) + "\r"
+
+def convert_Image_symbol(symbol_code):
+  global symbol_X, symbol_Y
+  symbol_X = ( ord(symbol_code[0]) )-65
+  symbol_Y = symbol_code[1]
+  print "symbol_X : "+str(symbol_X)+" symbol_Y : "+str(symbol_Y)
+
 
 def camqr():
   if len(argv) < 2: exit(1)
@@ -247,41 +317,43 @@ def camqr():
       # do something useful with results
       print 'decoded', symbol.type, symbol.location, 'symbol', '"%s"' % symbol.data
       barloc = symbol.location
+      convert_Image_symbol(symbol.data)
 
   try:
     print barloc[0][0]
       # clean up
     del(image)
 
-    win = GraphWin('qr', 500, 500)
-    pt = Circle(Point(barloc[0][0],barloc[0][1]),20)
-    pt.draw(win)
-    pt = Circle(Point(barloc[1][0],barloc[1][1]),5)
-    pt.draw(win) 
-    i = 0
-    while (i<3):
-        line = Line(Point(barloc[i][0],barloc[i][1]), Point(barloc[i+1][0], barloc[i+1][1]))
-        line.draw(win)
-        i = i + 1
-    line = Line(Point(barloc[i][0],barloc[i][1]), Point(barloc[0][0], barloc[0][1]))
-    line.draw(win)
-    sqrt =((barloc[0][0] - barloc[2][0])**2 + (barloc[0][1] - barloc[2][1])**2)**0.5
-    a =float(barloc[0][0] - barloc[2][0])
-    b =float(barloc[0][1] - barloc[2][1])
-    a = a / sqrt
-    b = b / sqrt
-    print sqrt
-    print a
-    print b
+    if(True):
+      win = GraphWin('qr', 500, 500)
+      pt = Circle(Point(barloc[0][0],barloc[0][1]),20)
+      pt.draw(win)
+      pt = Circle(Point(barloc[1][0],barloc[1][1]),5)
+      pt.draw(win) 
+      i = 0
+      while (i<3):
+          line = Line(Point(barloc[i][0],barloc[i][1]), Point(barloc[i+1][0], barloc[i+1][1]))
+          line.draw(win)
+          i = i + 1
+      line = Line(Point(barloc[i][0],barloc[i][1]), Point(barloc[0][0], barloc[0][1]))
+      line.draw(win)
+      sqrt =((barloc[0][0] - barloc[2][0])**2 + (barloc[0][1] - barloc[2][1])**2)**0.5
+      a =float(barloc[0][0] - barloc[2][0])
+      b =float(barloc[0][1] - barloc[2][1])
+      a = a / sqrt
+      b = b / sqrt
+      print sqrt
+      print a
+      print b
 
-    a = a * 100
-    b = b * 100
-    c = 250
+      a = a * 100
+      b = b * 100
+      c = 250
 
-    line = Line(Point(c,c), Point(c+a,c+b))
-    line.draw(win)
+      line = Line(Point(c,c), Point(c+a,c+b))
+      line.draw(win)
 
-    #win.getMouse() #pause for click in window
+      #win.getMouse() #pause for click in window
 
   except Exception, e:
     print "Exception: ", e
@@ -460,7 +532,7 @@ def read_LSM303D():
   #print "magy", magy
   magnetic_heading_LSM303 = math.atan2(magy,magx)
 
-  declinationAngle =  0 - math.radians(6) #150
+  declinationAngle =  0 - math.radians(150) #150
   magnetic_heading_LSM303 += declinationAngle
   
   # Correct for when signs are reversed.
@@ -501,7 +573,8 @@ def main():
 
     print "The server is not running"
     
-    global rotary_counters, lock_rotary, encoder_reading, magnetic_heading_LSM303, route_counter, x_var, y_var, prev_stat, stat, prev_time, current_time
+    global rotary_counters, lock_rotary, encoder_reading, magnetic_heading_LSM303, route_counter, ext_var, prev_stat, stat, prev_time, current_time,image_prev_time
+    
 
     total_count = [0,0,0,0]
     new_counter = [0,0,0,0]
@@ -514,9 +587,8 @@ def main():
     # create parser
     parser = argparse.ArgumentParser(description="QR serial")
     # add expected arguments
-    parser.add_argument('--port', dest='port', required=False)
-    parser.add_argument('-x_var', dest='x_var', required=False)
-    parser.add_argument('-y_var', dest='y_var', required=False)
+    parser.add_argument('--port', dest='port', required=True)
+    parser.add_argument('-ext_var', dest='ext_var', required=False)
 
     # parse args
     args = parser.parse_args()
@@ -524,14 +596,11 @@ def main():
     #strPort = '/dev/tty.usbserial-A7006Yqh'
     #strPort = 'COM8'
     strPort = args.port
-    x_var = args.x_var
-    y_var = args.y_var
+    ext_var = args.ext_var
 
-    if strPort is None:
-      strPort = "/dev/ttyUSB0"
 
     ser = serial.Serial(strPort, 115200)
-    printx = 0
+    printx = 1
     cnt = 1
     velX = 0
     posX = 0
@@ -555,34 +624,16 @@ def main():
     # - X -
     # - X X
     # - - -
+    
+
+    #route  = (A,0),(A,1),(B,1),(C,1),(C,2)
+    #routelen = 4
 
     route  = (A,0),(B,0),(C,0),(C,1),(C,2)
     routelen = 4
 
-
-    route  = (A,0),(A,1),(B,1),(C,1),(C,2)
-    routelen = 4
-
-    route  = (C,0),(C,1),(B,1),(C,1),(C,2)
-    routelen = 4
-
-    route  = (B,1),(C,1),(C,2),(A,2),(A,1), (A,0)
-    routelen = 5
-
-
-    route  = (A,2),(B,1),(C,0),(C,1),(C,2), (B,2)
-    routelen = 5
-    
-    route  = (A,2),(A,1),(B,1),(C,1),(C,2), (B,2)
-    routelen = 5
-
-#    route  = (A,2),(A,1),(A,0),(B,0),(C,0),(C,1),(C,2),(B,2),(A,2)
-#    routelen = 8    
     print route
     print 
-
-
-
 
 
 
@@ -590,14 +641,32 @@ def main():
     print('reading from serial port %s...' % strPort),
     print('            plotting data...')
 
-    
+    camera = picamera.PiCamera()
+    camera.resolution = (500, 500)
+    camera.exposure_mode = 'sports'
     frameCnt = 0
+    proc = False
+
+    frameCnt = 0
+    time_dif = 0
+    image_current_time = 0
+
     while True:
-      # prev_stat = stat
-      # stat = os.stat("image.jpg").st_mtime
-      # if (stat != prev_stat):
-      #   print "----------------------------------------------------------------------------------------------------------------------------"
-      #   camqr()
+
+      image_current_time = datetime.now()
+      time_dif = image_current_time - image_prev_time
+      time_dif = (time_dif.days * 24 * 60 * 60 + time_dif.seconds) * 1000 + time_dif.microseconds / 1000.0
+     
+      if(proc):
+        camqr()
+        print "----------------------------------------------------------------------------------------------------------------------------"
+        proc = False
+
+      if(time_dif >= 1000):
+        image_prev_time = image_current_time
+        camera.capture('image.jpg')
+        proc = True  
+
 
 
       if route_counter < routelen:
